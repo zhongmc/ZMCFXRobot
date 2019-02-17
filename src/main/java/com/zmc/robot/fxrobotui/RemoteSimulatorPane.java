@@ -432,8 +432,9 @@ public class RemoteSimulatorPane {
     private void comDataReaded(byte[] buf, int len) {
 
         String strValue = new String(buf, 0, len);
-        if (strValue.startsWith("RB")) // robot position
+        if (strValue.startsWith("RP")) // robot position
         {
+  //          log.info(strValue);
             int idx1, idx2;
             idx1 = 2;
             idx2 = strValue.indexOf(',', idx1);
@@ -491,7 +492,7 @@ public class RemoteSimulatorPane {
         if (serialPortUtil == null)
             return;
 
-        log.info("Send cmd:" + cmdStr);
+     //   log.info("Send cmd:" + cmdStr);
         try {
             serialPortUtil.write(cmdStr);
         } catch (Exception e) {
