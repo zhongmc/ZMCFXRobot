@@ -1,7 +1,6 @@
 package com.zmc.robot.simulator;
 
 public class RearDriveRobot extends AbstractRobot {
-	private final static String TAG = "TT Robot";
 
 	public RearDriveRobot() {
 

@@ -14,7 +14,6 @@ public class FollowWall extends Controller {
 
 	Vector u_fw_pp = new Vector();
 	Vector u_fw = new Vector();
-	private static String TAG = "FollowWall";
 
 	public FollowWall() {
 

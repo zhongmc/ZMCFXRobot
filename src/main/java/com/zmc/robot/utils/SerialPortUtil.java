@@ -1,24 +1,22 @@
 package com.zmc.robot.utils;
 
-import gnu.io.CommPortIdentifier;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import gnu.io.UnsupportedCommOperationException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.TooManyListenersException;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import gnu.io.UnsupportedCommOperationException;
 
 public class SerialPortUtil implements SerialPortEventListener {
 
 	private int timeout = 2000;// open �˿�ʱ�ĵȴ�ʱ��
-	private int threadTime = 0;
+	// private int threadTime = 0;
 
 	private CommPortIdentifier commPort;
 	private SerialPort serialPort = null;

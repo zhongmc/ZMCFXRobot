@@ -13,7 +13,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
   <dependencies>
     <dependency>
         <groupId>log4j</groupId>
@@ -38,7 +37,43 @@
                     <source>1.8</source>  
                     <target>1.8</target>  
                 </configuration>  
-            </plugin>  
+            </plugin> 
+
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-shade-plugin</artifactId>  
+              <version>3.0.0</version>  
+              <executions>
+                <execution>
+                  <phase>package</phase>
+                  <goals><goal>shade</goal></goals>
+                  <configuration>
+                       <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                              <mainClass>com.zmc.robot.fxrobot.ZMCFXRobot</mainClass>
+                        </transformer>
+                           <!--  解决spring 项目的xml 文件找不到问题 -->
+                           <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                               <resource>META-INF/spring.handlers</resource>
+                           </transformer>
+                           <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                               <resource>META-INF/spring.schemas</resource>
+                           </transformer>
+                       </transformers>
+                       <filters> <!-- 排除掉一些无用的文件 -->
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                     <exclude>META-INF/*.SF</exclude>
+                                     <exclude>META-INF/*.DSA</exclude>
+                                     <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                            </filter>
+                       </filters>
+                  </configuration>
+                </execution>
+              </executions> 
+            </plugin> 
         </plugins>  
     </build>
       

@@ -1,7 +1,5 @@
 package com.zmc.robot.simulator;
 
-import java.util.ArrayList;
-
 public abstract class AbstractRobot {
 
 	private RobotState mState = new RobotState();
@@ -35,8 +33,6 @@ public abstract class AbstractRobot {
 
 	// ObstacleCrossPoint ocps[] = new ObstacleCrossPoint[5];
 	// private ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
-
-	private final static String TAG = "ZMCRobot";
 
 	public AbstractRobot() {
 	}

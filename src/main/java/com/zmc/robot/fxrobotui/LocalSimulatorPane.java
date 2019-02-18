@@ -51,7 +51,6 @@ public class LocalSimulatorPane implements Runnable {
 
     private Thread timmerThread = null; // = new Thread(this );
     private boolean mStopTimer = false;
-    private static int MSG_TIMMER = 1;
 
     public Pane getMainPane() {
         return border;

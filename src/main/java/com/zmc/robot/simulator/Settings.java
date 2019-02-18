@@ -32,8 +32,6 @@ public class Settings {
 
 	private byte[] encodedData = new byte[18];
 
-	private static String TAG = "Settings";
-
 	public void decodeWithSettingsType(byte[] data) {
 		settingsType = data[0];
 		if (settingsType == 1 || settingsType == 2 || settingsType == 3) {

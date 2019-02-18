@@ -3,8 +3,7 @@ package com.zmc.robot.utils;
 public class PortNotFoundException extends Exception {
 
 	public PortNotFoundException(String msg) {
-		// TODO Auto-generated constructor stub
-		super( msg );
+		super(msg);
 	}
 
 	/**

@@ -231,9 +231,11 @@ public class Supervisor {
 				else if (m_SlidingMode.slidingRight())
 					m_FollowWall.dir = 1;
 
-				else
-					m_FollowWall.dir = 0;
-
+				else {
+					log.info("FLW failed...");
+					int dir = getObstacleDir();
+					m_FollowWall.dir = dir - 1;
+				}
 				log.info("Change to fallow wall ..." + m_FollowWall.dir);
 				m_FollowWall.reset();
 				m_currentController = m_FollowWall;
@@ -292,30 +294,6 @@ public class Supervisor {
 		}
 
 		return m_currentController.execute(robot, m_input, dt);
-
-	}
-
-	private boolean shouldGotoGoal() {
-		double sensor_gains[] = { 1, 1, 1, 1, 1 }; // { 1, 1, 1, 1, 1 };
-
-		IRSensor[] irSensors = robot.getIRSensors();
-
-		double uao_x = 0, uao_y = 0;
-		for (int i = 0; i < 5; i++) {
-			uao_x = uao_x + (irSensors[i].xw - robot.x) * sensor_gains[i];
-			uao_y = uao_y + (irSensors[i].yw - robot.y) * sensor_gains[i];
-		}
-
-		double gtg_x, gtg_y;
-
-		gtg_x = m_input.x_g - robot.x;
-		gtg_y = m_input.y_g - robot.y;
-
-		double px = uao_x * gtg_x + uao_y * gtg_y;
-		if (px > 0)
-			return true;
-
-		return false;
 
 	}
 
@@ -445,34 +423,6 @@ public class Supervisor {
 
 	}
 
-	private boolean isOneSideWall() {
-		IRSensor[] irSensors = robot.getIRSensors();
-
-		int l = 0;
-		for (int i = 0; i < 3; i++) {
-			if (irSensors[i].distance < IRSensor.maxDistance) {
-				l++;
-				break;
-			}
-		}
-
-		if (l == 0)
-			return true;
-
-		l = 0;
-		for (int i = 2; i < 5; i++) {
-			if (irSensors[i].distance < IRSensor.maxDistance) {
-				l++;
-				break;
-			}
-		}
-
-		if (l == 0)
-			return true;
-
-		return false;
-	}
-
 	// 0, 1, 2; none, left, right
 	private int getWallDir() {
 
@@ -487,8 +437,35 @@ public class Supervisor {
 		else if (m_SlidingMode.slidingRight())
 			return 2;
 
-		return 1;
+		return getObstacleDir();
+	}
 
+	// 0 none 1 left 2 right
+	private int getObstacleDir() {
+
+		IRSensor[] irSensors = robot.getIRSensors();
+
+		int l = 0;
+		for (int i = 0; i < 3; i++) {
+			if (irSensors[i].distance < IRSensor.maxDistance - 0.05) {
+				l++;
+			}
+		}
+
+		int r = 0;
+		for (int i = 2; i < 5; i++) {
+			if (irSensors[i].distance < IRSensor.maxDistance - 0.05) {
+				r++;
+			}
+		}
+
+		if (l == 0 && r == 0)
+			return 0;
+
+		if (l >= r)
+			return 1;
+		else
+			return 2;
 	}
 
 	public Vector getRecoverPoint() {

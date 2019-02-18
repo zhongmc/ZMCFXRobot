@@ -2,8 +2,6 @@ package com.zmc.robot.simulator;
 //import com.zmc.robot.ui.ObstacleCrossPoint;
 
 public class TTRobot extends AbstractRobot {
-	private final static String TAG = "TT Robot";
-
 	public TTRobot() {
 
 		x = 0;

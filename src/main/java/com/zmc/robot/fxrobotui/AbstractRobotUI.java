@@ -25,8 +25,6 @@ public abstract class AbstractRobotUI {
 	public double width = 800, height = 800;
 	private double mScale = 100;
 
-	private final static String TAG = "Robot";
-
 	// the robot positionb
 	public double x, y, theta;
 	private double transformMatrix[][] = new double[3][3];
@@ -274,7 +272,6 @@ public abstract class AbstractRobotUI {
 			// double theta1 = Math.atan2(Math.sin(theta0), Math.cos(theta0));
 			// Log.i(TAG, "Get Distance:[" + x0 + ", " + y0 + "," + theta0 + ", " + theta);
 
-			double d = 100;
 			for (Obstacle obs : obstacles) {
 				obs.getDistance(x0, y0, theta0, mocps[i]);
 				if (mocps[i].distance < irDistances[i])

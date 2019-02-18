@@ -19,7 +19,6 @@ public class SlidingMode extends Controller {
 	static String TAG = "SlidingMode";
 
 	public SlidingMode() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -204,27 +203,28 @@ public class SlidingMode extends Controller {
 
 	}
 
-	private static void getSegma(Vector u_gtg, Vector u_ao, Vector u_fw, Vector sigma) {
+	// private static void getSegma(Vector u_gtg, Vector u_ao, Vector u_fw, Vector
+	// sigma) {
 
-		double a1, a2;
-		if (u_ao.y == 0 || u_gtg.x == 0) {
-			// Serial.println("Div by zero 1!");
-			return;
-		}
-		a1 = -u_ao.x / u_ao.y;
-		a2 = -u_gtg.y / u_gtg.x;
+	// double a1, a2;
+	// if (u_ao.y == 0 || u_gtg.x == 0) {
+	// // Serial.println("Div by zero 1!");
+	// return;
+	// }
+	// a1 = -u_ao.x / u_ao.y;
+	// a2 = -u_gtg.y / u_gtg.x;
 
-		double fv1, fv2;
+	// double fv1, fv2;
 
-		fv1 = (u_gtg.x + a1 * u_gtg.y);
-		fv2 = (u_ao.y + a2 * u_ao.x);
-		if (fv1 == 0 || fv2 == 0) {
-			// Serial.println("Div by zero 2!");
-			return;
-		}
-		sigma.x = (u_fw.x + a1 * u_fw.y) / fv1;
-		sigma.y = (u_fw.y + a2 * u_fw.x) / fv2;
-	}
+	// fv1 = (u_gtg.x + a1 * u_gtg.y);
+	// fv2 = (u_ao.y + a2 * u_ao.x);
+	// if (fv1 == 0 || fv2 == 0) {
+	// // Serial.println("Div by zero 2!");
+	// return;
+	// }
+	// sigma.x = (u_fw.x + a1 * u_fw.y) / fv1;
+	// sigma.y = (u_fw.y + a2 * u_fw.x) / fv2;
+	// }
 
 	public boolean slidingLeft() {
 		// return leftObstacle; // ||

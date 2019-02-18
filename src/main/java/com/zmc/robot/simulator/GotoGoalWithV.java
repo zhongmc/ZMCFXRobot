@@ -2,11 +2,11 @@ package com.zmc.robot.simulator;
 
 public class GotoGoalWithV extends Controller {
 
-	private static final String TAG = "GTG";
+	// private static final String TAG = "GTG";
 	private double m_xg, m_yg;
 
 	private int state = 0; // normal state
-	private boolean targetMoified = false;
+	// private boolean targetMoified = false;
 
 	Output output = new Output();
 	private Vector uGtg = new Vector();
@@ -82,7 +82,7 @@ public class GotoGoalWithV extends Controller {
 		lastVEI = 0;
 
 		state = 0;
-		targetMoified = false;
+		// targetMoified = false;
 
 	}
 

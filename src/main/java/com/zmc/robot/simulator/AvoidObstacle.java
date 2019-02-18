@@ -1,10 +1,8 @@
 package com.zmc.robot.simulator;
 
 public class AvoidObstacle extends Controller {
-
-	private static String TAG = "AvoidObstacle";
 	private Vector uAvo = new Vector();
-	private Vector u_fw_t = new Vector();
+	// private Vector u_fw_t = new Vector();
 
 	public AvoidObstacle() {
 		Kp = 5;

@@ -19,8 +19,6 @@ public class Obstacle {
 
 	private Color mColor = Color.LIGHTSLATEGRAY;
 
-	private final static String TAG = "OBSTACLE";
-
 	public Obstacle(double obPath[][]) throws Exception {
 		if (obPath.length < 3)
 			throw new Exception("Invalid obstacle path!");

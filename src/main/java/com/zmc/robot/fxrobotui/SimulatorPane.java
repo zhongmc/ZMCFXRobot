@@ -30,10 +30,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 
-public class RemoteSimulatorPane {
+public class SimulatorPane {
 
-    private RobotCanvasView robotView;
+    private RobotView robotView;
+    private ScenseView scenseView;
 
     private BorderPane border;
 
@@ -57,19 +59,20 @@ public class RemoteSimulatorPane {
     private boolean isGoing = false;
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
 
-    private Logger log = Logger.getLogger("Remoter");
+    private Logger log = Logger.getLogger("Simulator");
 
     public Pane getMainPane() {
         return border;
     }
 
-    public RemoteSimulatorPane() {
+    public SimulatorPane() {
 
         border = new BorderPane();
         border.setPadding(new Insets(20, 0, 10, 5));
+        scenseView = new ScenseView(1024, 800);
 
-        robotView = new RobotCanvasView(1024, 800);
-
+        robotView = new RobotView(1024, 800);
+        robotView.setObstacles(scenseView.getObstacles());
         robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
             public void handle(MouseEvent t) {
@@ -130,9 +133,12 @@ public class RemoteSimulatorPane {
             }
         });
 
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(scenseView, robotView);
+
         ScrollPane s1 = new ScrollPane();
         // s1.setPrefSize(800, 600);
-        s1.setContent(robotView);
+        s1.setContent(stackPane);
 
         border.setCenter(s1);
         border.setRight(createLeftPane());

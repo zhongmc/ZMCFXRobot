@@ -11,8 +11,8 @@ public class RobotState {
 
 	public double voltage;
 
-	private long rightTicks;
-	private long leftTicks;
+	// private long rightTicks;
+	// private long leftTicks;
 
 	// static RobotState robotState = new RobotState();
 

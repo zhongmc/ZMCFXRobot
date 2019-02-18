@@ -3,6 +3,7 @@ package com.zmc.robot.fxrobot;
 import com.zmc.robot.fxrobotui.LocalSimulatorPane;
 import com.zmc.robot.fxrobotui.RemoteSimulatorPane;
 import com.zmc.robot.fxrobotui.SettingsPane;
+import com.zmc.robot.fxrobotui.SimulatorPane;
 import com.zmc.robot.utils.TextAreaAppender;
 
 import javafx.application.Application;
@@ -10,7 +11,6 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
@@ -24,7 +24,7 @@ import javafx.stage.WindowEvent;
 
 public class ZMCFXRobot extends Application {
 
-    private final Menu comMenu = new Menu("COMM Port");
+    // private final Menu comMenu = new Menu("COMM Port");
     private final TextArea loggingView = new TextArea();
     private SettingsPane settingsPane;
 
@@ -49,13 +49,17 @@ public class ZMCFXRobot extends Application {
         tabRemoteSimulator.setText("Remote Simulator");
         tabRemoteSimulator.setContent(remoteSimulatorPane.getMainPane());
 
+        Tab tabSimulator1 = new Tab();
+        tabSimulator1.setText("Simulator1");
+        tabSimulator1.setContent(new SimulatorPane().getMainPane());
+
         settingsPane = new SettingsPane();
 
         Tab tabSettings = new Tab();
         tabSettings.setText("Settings");
         tabSettings.setContent(settingsPane.getMainPane());
 
-        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabSettings);
+        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabSimulator1, tabSettings);
 
         SplitPane splitPane = new SplitPane();
 

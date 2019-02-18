@@ -143,7 +143,7 @@ public class TraceRoute extends Controller {
 	 */
 	public int recoverGoalFromWall1(AbstractRobot robot) {
 
-		float x0, y0, r = 0.8f, d1, d2, d;
+		float x0, y0, d1, d2, d; // r = 0.8f,
 
 		x0 = (float) robot.x;
 		y0 = (float) robot.y;
@@ -510,13 +510,9 @@ public class TraceRoute extends Controller {
 	 * @param robot
 	 */
 	public void recoverGoal1(AbstractRobot robot) {
-		double dd = 0;
+
 		log.info("Change rout: " + mCurRouteIdx);
-
-		// ��ǰ������·���Ľ���㣿��
-
 		Point2D p0 = new Point2D((float) robot.x, (float) robot.y);
-
 		Point2D p1 = new Point2D();
 		Point2D p2 = new Point2D();
 
@@ -616,10 +612,6 @@ public class TraceRoute extends Controller {
 
 		float x, y, theta;
 		int idx;
-
-		public CrossInfo() {
-
-		}
 
 		public CrossInfo(float x, float y, float theta, int idx) {
 			this.x = x;
