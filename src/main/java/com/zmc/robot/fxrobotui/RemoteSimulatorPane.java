@@ -30,10 +30,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 
 public class RemoteSimulatorPane {
 
-    private RobotCanvasView robotView;
+    private RobotView robotView;
+    private ScenseView scenseView;
 
     private BorderPane border;
 
@@ -57,7 +59,7 @@ public class RemoteSimulatorPane {
     private boolean isGoing = false;
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
 
-    private Logger log = Logger.getLogger("Remoter");
+    private Logger log = Logger.getLogger("Simulator");
 
     public Pane getMainPane() {
         return border;
@@ -67,9 +69,9 @@ public class RemoteSimulatorPane {
 
         border = new BorderPane();
         border.setPadding(new Insets(20, 0, 10, 5));
-
-        robotView = new RobotCanvasView(1024, 800);
-
+        scenseView = new ScenseView(1024, 800);
+        robotView = new RobotView(1024, 800);
+        robotView.setObstacles(scenseView.getObstacles());
         robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
             public void handle(MouseEvent t) {
@@ -118,6 +120,7 @@ public class RemoteSimulatorPane {
                     double x = t.getX();
                     double y = t.getY();
                     robotView.setRobotPosition(x, y);
+                    scenseView.setRobotPosition(x, y);
 
                     Point2D p = robotView.getRobotPosition();
                     home_x = p.x;
@@ -130,9 +133,12 @@ public class RemoteSimulatorPane {
             }
         });
 
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(scenseView, robotView);
+
         ScrollPane s1 = new ScrollPane();
         // s1.setPrefSize(800, 600);
-        s1.setContent(robotView);
+        s1.setContent(stackPane);
 
         border.setCenter(s1);
         border.setRight(createLeftPane());
@@ -287,7 +293,10 @@ public class RemoteSimulatorPane {
             connectButton.setDisable(true);
             closeButton.setDisable(false);
             cmdField.setDisable(false);
+            simulateModeCheckBox.setDisable(false);
+
         } else {
+            simulateModeCheckBox.setDisable(true);
             homeButton.setDisable(true);
             startStopButton.setDisable(true);
             // connectButton.setDisable(true);
@@ -343,6 +352,8 @@ public class RemoteSimulatorPane {
     private void resetRobot() {
         // mRobotView.resetRobot();
         robotView.setRobotPosition(home_x, home_y, home_theta, 0);
+        scenseView.resetRobotPosition(home_x, home_y);
+
         setRemoteRobotPosition(home_x, home_y, home_theta);
     }
 
@@ -459,7 +470,10 @@ public class RemoteSimulatorPane {
             tmp = strValue.substring(idx2 + 1);
             double v = Double.valueOf(tmp);
 
-            robotView.setRobotPosition(x, y, theta, v);
+            Platform.runLater(() -> {
+                robotView.setRobotPosition(x, y, theta, v);
+                scenseView.setRobotPosition(x, y, theta, v); // draw trails
+            });
 
             setRemoteObDistance();
 
@@ -538,6 +552,7 @@ public class RemoteSimulatorPane {
     public void stop() {
         // mStopTimer = true;
         log.info("required to stop...");
+        closeCom();
     }
 
 }

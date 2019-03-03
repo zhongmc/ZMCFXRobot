@@ -2,12 +2,15 @@ package com.zmc.robot.fxrobotui;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.zmc.robot.simulator.ControllerInfo;
 import com.zmc.robot.simulator.RearDriveRobot;
 import com.zmc.robot.simulator.RobotState;
 import com.zmc.robot.simulator.Supervisor;
 import com.sun.javafx.geom.Point2D;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.beans.value.ObservableValue;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,25 +27,37 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.apache.log4j.Logger;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.CheckBox;
 
 public class LocalSimulatorPane implements Runnable {
 
-    private RobotCanvasView robotView;
+    // private RobotCanvasView robotView;
+
+    private RobotView robotView;
+    private ScenseView scenseView;
+
     private BorderPane border;
 
     private Button homeButton;
     private Button startStopButton;
 
     private TextField velocityField, angleField;
+    private CheckBox traceRouteCheckBox;
+    private Button setRouteButton;
 
     private Supervisor supervisor = new Supervisor();
     private RearDriveRobot robot = new RearDriveRobot();
 
     private boolean isGoing = false;
-    private boolean isPause = true;
+    private boolean isPause = false;
     private boolean setRoute = false;
+    private boolean setRouteStarted = false;
+
     private float[][] mRoutes = new float[2000][2];
     private int routeSize = 0;
+    private double drag_x0, drag_y0;
+
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
 
     private int mMode = 0;
@@ -56,6 +71,8 @@ public class LocalSimulatorPane implements Runnable {
         return border;
     }
 
+    private boolean draged = false;
+
     public LocalSimulatorPane() {
 
         supervisor.setMode(0); // goto goal mode
@@ -63,7 +80,47 @@ public class LocalSimulatorPane implements Runnable {
         border = new BorderPane();
         border.setPadding(new Insets(20, 0, 10, 5));
 
-        robotView = new RobotCanvasView(1024, 800);
+        robotView = new RobotView(1024, 800);
+        scenseView = new ScenseView(1024, 800);
+        robotView.setObstacles(scenseView.getObstacles());
+
+        robotView.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                draged = false;
+
+                if (setRoute && !setRouteStarted) {
+                    setRouteStarted = true;
+                    drag_x0 = event.getX();
+                    drag_y0 = event.getY();
+                    routeSize = 0;
+                    Point2D p = scenseView.startRoutes(drag_x0, drag_y0);
+                    mRoutes[0][0] = p.x;
+                    mRoutes[0][1] = p.y;
+                    routeSize++;
+
+                }
+            }
+        });
+
+        robotView.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (setRoute) {
+                    Point2D p = scenseView.addRoutePoint(event.getX(), event.getY());
+                    mRoutes[routeSize][0] = p.x;
+                    mRoutes[routeSize][1] = p.y;
+                    routeSize++;
+                }
+            }
+        });
+
+        robotView.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                draged = true;
+            }
+        });
 
         robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
@@ -72,6 +129,12 @@ public class LocalSimulatorPane implements Runnable {
                 if (t.getClickCount() == 1) {
                     // System.out.println("Single Click");
                     latestClickRunner = new ClickRunner(() -> {
+
+                        if (draged || setRoute) {
+                            latestClickRunner = null;
+                            draged = false;
+                            return;
+                        }
                         double x = t.getX();
                         double y = t.getY();
                         robotView.setTarget(x, y);
@@ -109,10 +172,12 @@ public class LocalSimulatorPane implements Runnable {
                     if (latestClickRunner != null) {
                         // System.out.println("-> Abort Single Click");
                         latestClickRunner.abort();
+                        latestClickRunner = null;
                     }
                     double x = t.getX();
                     double y = t.getY();
                     robotView.setRobotPosition(x, y);
+                    scenseView.setRobotPosition(x, y);
 
                     Point2D p = robotView.getRobotPosition();
                     home_x = p.x;
@@ -128,9 +193,11 @@ public class LocalSimulatorPane implements Runnable {
             }
         });
 
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(scenseView, robotView);
+
         ScrollPane s1 = new ScrollPane();
-        // s1.setPrefSize(800, 600);
-        s1.setContent(robotView);
+        s1.setContent(stackPane);
 
         border.setCenter(s1);
         border.setRight(createLeftPane());
@@ -199,7 +266,28 @@ public class LocalSimulatorPane implements Runnable {
         grid.add(label, 0, 1);
         grid.add(angleField, 1, 1);
 
-        vbButtons.getChildren().addAll(homeButton, startStopButton, grid);
+        traceRouteCheckBox = new CheckBox("Trace route");
+
+        traceRouteCheckBox.selectedProperty()
+                .addListener((ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) -> {
+                    setTraceRouteMode(new_val);
+                });
+
+        setRouteButton = new Button("Start set route");
+
+        setRouteButton.setOnAction((ActionEvent) -> {
+            if (!setRoute) {
+                setRouteStarted = false;
+                setRouteButton.setText("Stop set route");
+                setRoute = true;
+            } else {
+                setRouteButton.setText("Start set route");
+                setRoute = false;
+            }
+
+        });
+
+        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, setRouteButton, traceRouteCheckBox);
 
         return vbButtons;
     }
@@ -237,14 +325,19 @@ public class LocalSimulatorPane implements Runnable {
         // mRobotView.setRecoverPoint(0, 0);
         if (isPause) {
             isPause = false;
-            startStopButton.setText("Stop");
+            startStopButton.setText("Pause");
             // supervisor.reset();
             isGoing = true;
             return;
 
         }
 
-        if (this.mMode == 2) // trace route mode
+        if (this.mMode == 0) // goto goal mode
+        {
+            startStopButton.setText("Pause");
+            isGoing = true;
+
+        } else if (this.mMode == 2) // trace route mode
         {
             if (routeSize < 5) {
 
@@ -274,7 +367,7 @@ public class LocalSimulatorPane implements Runnable {
 
         }
 
-        startStopButton.setText("Stop");
+        startStopButton.setText("Pause");
         // supervisor.reset();
         isGoing = true;
 
@@ -283,24 +376,36 @@ public class LocalSimulatorPane implements Runnable {
     private void stopRobot() {
 
         isPause = true;
-
+        isGoing = false;
         startStopButton.setText("Go");
         // supervisor.reset();
-        isGoing = false;
 
+    }
+
+    public void setTraceRouteMode(boolean new_val) {
+        if (new_val) {
+            log.info("Change to trace route mode...");
+            mMode = 2;
+        } else
+            mMode = 0;
+        isGoing = false;
+        isPause = false;
+        supervisor.setMode(mMode);
     }
 
     private void resetRobot() {
 
         // mRobotView.resetRobot();
         robotView.setRobotPosition(home_x, home_y, home_theta, 0);
-
         robot.setPosition(home_x, home_y, home_theta);
+
+        scenseView.resetRobotPosition(home_x, home_y);
+
         double irDistances[] = robotView.getIrDistances();
         supervisor.setIrDistances(irDistances);
 
         supervisor.reset();
-        isPause = true;
+        isPause = false;
     }
 
     public void stop() {
@@ -334,6 +439,9 @@ public class LocalSimulatorPane implements Runnable {
                 supervisor.execute(0, 0, 0.02);
                 RobotState state = supervisor.getRobotState();
                 robotView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
+                scenseView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
+                ControllerInfo ctrlInfo = supervisor.getControllerInfo();
+                robotView.setControllerInfo(ctrlInfo);
 
                 double irDistances[] = robotView.getIrDistances();
                 supervisor.setIrDistances(irDistances);

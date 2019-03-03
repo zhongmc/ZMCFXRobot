@@ -32,10 +32,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 
-public class SimulatorPane {
+public class BalanceRobotPane {
 
-    private RobotView robotView;
-    private ScenseView scenseView;
+    // private RobotView robotView;
+    // private ScenseView scenseView;
+
+    private CurveView curveView;
 
     private BorderPane border;
 
@@ -59,88 +61,72 @@ public class SimulatorPane {
     private boolean isGoing = false;
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
 
-    private Logger log = Logger.getLogger("Simulator");
+    private Logger log = Logger.getLogger("Balance");
 
     public Pane getMainPane() {
         return border;
     }
 
-    public SimulatorPane() {
+    public BalanceRobotPane() {
 
         border = new BorderPane();
         border.setPadding(new Insets(20, 0, 10, 5));
-        scenseView = new ScenseView(1024, 800);
+        curveView = new CurveView(900, 600);
 
-        robotView = new RobotView(1024, 800);
-        robotView.setObstacles(scenseView.getObstacles());
-        robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-
-            public void handle(MouseEvent t) {
-
-                if (t.getClickCount() == 1) {
-                    // System.out.println("Single Click");
-                    latestClickRunner = new ClickRunner(() -> {
-                        double x = t.getX();
-                        double y = t.getY();
-                        robotView.setTarget(x, y);
-
-                        Point2D p = robotView.getTarget();
-                        double angle = 0;
-                        // String angleStr = angleField.getText();
-                        // if (angleStr != null && !angleStr.isEmpty()) {
-                        // try {
-
-                        // int in = Integer.valueOf(angleStr);
-
-                        // if (in <= 180)
-                        // angle = (in * Math.PI) / 180;
-                        // else {
-                        // in = in - 360;
-                        // angle = (in * Math.PI) / 180;
-                        // }
-
-                        // } catch (Exception e) {
-
-                        // }
-                        // }
-
-                        log.info("Set target to:" + p.x + "," + p.y + ": " + angle);
-                        setRemoteGoal(p.x, p.y, angle);
-
-                        latestClickRunner = null;
-                    });
-
-                    CompletableFuture.runAsync(latestClickRunner);
-                }
-                if (t.getClickCount() == 2) {
-                    System.out.println("Double Click");
-                    if (latestClickRunner != null) {
-                        // System.out.println("-> Abort Single Click");
-                        latestClickRunner.abort();
-                    }
-                    double x = t.getX();
-                    double y = t.getY();
-                    robotView.setRobotPosition(x, y);
-
-                    Point2D p = robotView.getRobotPosition();
-                    home_x = p.x;
-                    home_y = p.y;
-                    setRemoteRobotPosition(home_x, home_y, home_theta);
-                    // home_theta = angle;
-                    log.info("move robot to:" + home_x + ", " + home_y);
-
-                }
-            }
-        });
-
-        StackPane stackPane = new StackPane();
-        stackPane.getChildren().addAll(scenseView, robotView);
-
+        /*
+         * scenseView = new ScenseView(1024, 800); robotView = new RobotView(1024, 800);
+         * robotView.setObstacles(scenseView.getObstacles());
+         * robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new
+         * EventHandler<MouseEvent>() {
+         * 
+         * public void handle(MouseEvent t) {
+         * 
+         * if (t.getClickCount() == 1) { // System.out.println("Single Click");
+         * latestClickRunner = new ClickRunner(() -> { double x = t.getX(); double y =
+         * t.getY(); robotView.setTarget(x, y);
+         * 
+         * Point2D p = robotView.getTarget(); double angle = 0; // String angleStr =
+         * angleField.getText(); // if (angleStr != null && !angleStr.isEmpty()) { //
+         * try {
+         * 
+         * // int in = Integer.valueOf(angleStr);
+         * 
+         * // if (in <= 180) // angle = (in * Math.PI) / 180; // else { // in = in -
+         * 360; // angle = (in * Math.PI) / 180; // }
+         * 
+         * // } catch (Exception e) {
+         * 
+         * // } // }
+         * 
+         * log.info("Set target to:" + p.x + "," + p.y + ": " + angle);
+         * setRemoteGoal(p.x, p.y, angle);
+         * 
+         * latestClickRunner = null; });
+         * 
+         * CompletableFuture.runAsync(latestClickRunner); } if (t.getClickCount() == 2)
+         * { System.out.println("Double Click"); if (latestClickRunner != null) { //
+         * System.out.println("-> Abort Single Click"); latestClickRunner.abort(); }
+         * double x = t.getX(); double y = t.getY(); robotView.setRobotPosition(x, y);
+         * scenseView.setRobotPosition(x, y);
+         * 
+         * Point2D p = robotView.getRobotPosition(); home_x = p.x; home_y = p.y;
+         * setRemoteRobotPosition(home_x, home_y, home_theta); // home_theta = angle;
+         * log.info("move robot to:" + home_x + ", " + home_y);
+         * 
+         * } } });
+         * 
+         * StackPane stackPane = new StackPane();
+         * stackPane.getChildren().addAll(scenseView, robotView);
+         * 
+         * ScrollPane s1 = new ScrollPane(); // s1.setPrefSize(800, 600);
+         * s1.setContent(stackPane);
+         * 
+         * border.setCenter(s1);
+         */
         ScrollPane s1 = new ScrollPane();
-        // s1.setPrefSize(800, 600);
-        s1.setContent(stackPane);
-
+        s1.setContent(curveView);
         border.setCenter(s1);
+
         border.setRight(createLeftPane());
 
     }
@@ -293,7 +279,10 @@ public class SimulatorPane {
             connectButton.setDisable(true);
             closeButton.setDisable(false);
             cmdField.setDisable(false);
+            simulateModeCheckBox.setDisable(false);
+
         } else {
+            simulateModeCheckBox.setDisable(true);
             homeButton.setDisable(true);
             startStopButton.setDisable(true);
             // connectButton.setDisable(true);
@@ -309,7 +298,9 @@ public class SimulatorPane {
         @Override
         public void serialEvent(SerialPortEvent event) {
             switch (event.getEventType()) {
-            case SerialPortEvent.BI:/* Break interrupt */
+            case SerialPortEvent.BI:/*
+                                     * Break interrupt
+                                     */
             case SerialPortEvent.OE:/* Overrun error */
             case SerialPortEvent.FE:/* Framing error */
             case SerialPortEvent.PE:/* Parity error */
@@ -346,12 +337,6 @@ public class SimulatorPane {
         isGoing = false;
     }
 
-    private void resetRobot() {
-        // mRobotView.resetRobot();
-        robotView.setRobotPosition(home_x, home_y, home_theta, 0);
-        setRemoteRobotPosition(home_x, home_y, home_theta);
-    }
-
     private void setSimulateMode(boolean value) {
         log.info("Set simulate mode: " + value);
         String cmdStr = "sm";
@@ -361,6 +346,13 @@ public class SimulatorPane {
             cmdStr = cmdStr + "0;";
 
         sendCmd(cmdStr);
+    }
+
+    private void resetRobot() {
+        // robotView.setRobotPosition(home_x, home_y, home_theta, 0);
+        // scenseView.resetRobotPosition(home_x, home_y);
+
+        setRemoteRobotPosition(home_x, home_y, home_theta);
     }
 
     private void setRemoteGoal(double x, double y, double angle) {
@@ -392,16 +384,16 @@ public class SimulatorPane {
 
     private void setRemoteObDistance() {
 
-        double[] distances = robotView.getIrDistances();
-        String cmdStr = "od";
-        for (int i = 0; i < 5; i++) {
-            int intv = (int) (distances[i] * 1000);
-            cmdStr = cmdStr + intv + ",";
-        }
+        // double[] distances = robotView.getIrDistances();
+        // String cmdStr = "od";
+        // for (int i = 0; i < 5; i++) {
+        // int intv = (int) (distances[i] * 1000);
+        // cmdStr = cmdStr + intv + ",";
+        // }
 
-        cmdStr = cmdStr + ";";
+        // cmdStr = cmdStr + ";";
 
-        sendCmd(cmdStr);
+        // sendCmd(cmdStr);
 
     }
 
@@ -431,10 +423,14 @@ public class SimulatorPane {
             }
 
         } catch (Exception e) {
-            log.error("Failed to read com", e);
+            log.error("Failed to read com：", e);
+            log.info(new String(comBuffer, 0, bufOff));
+            bufOff = 0; // reset
         }
 
     }
+
+    private double angleValue[] = new double[100];
 
     private void comDataReaded(byte[] buf, int len) {
 
@@ -465,13 +461,57 @@ public class SimulatorPane {
             tmp = strValue.substring(idx2 + 1);
             double v = Double.valueOf(tmp);
 
-            robotView.setRobotPosition(x, y, theta, v);
+            // robotView.setRobotPosition(x, y, theta, v);
+            // scenseView.setRobotPosition(x, y, theta, v); // draw trails
 
-            setRemoteObDistance();
+            // setRemoteObDistance();
 
-        } else {
+        } else if (strValue.startsWith("MU")) {
+
+            int intVal;
+            int idx1, idx2;
+            idx1 = 2;
+            String tmp;
+            int count = 0;
+            while (true) {
+                idx2 = strValue.indexOf(',', idx1);
+                if (idx2 == -1)
+                    tmp = strValue.substring(idx1);
+                else
+                    tmp = strValue.substring(idx1, idx2);
+                intVal = Integer.valueOf(tmp);
+                angleValue[count++] = (double) intVal / 10000;
+                if (idx2 == -1)
+                    break;
+                idx1 = idx2 + 1;
+            }
+
+            double curveData[] = new double[count];
+            System.arraycopy(angleValue, 0, curveData, 0, count);
+
+            Platform.runLater(() -> {
+                curveView.addData(curveData, curveData.length);
+            });
+
+            // curveView.addData(angleValue, count);
+        }
+
+        else {
             if (len > 2)
                 log.info(strValue);
+        }
+    }
+
+    private class CurveRunner implements Runnable {
+
+        private double[] curveData;
+
+        public CurveRunner(double[] curveData) {
+            this.curveData = curveData;
+        }
+
+        public void run() {
+            curveView.addData(curveData, curveData.length);
         }
     }
 
@@ -544,6 +584,7 @@ public class SimulatorPane {
     public void stop() {
         // mStopTimer = true;
         log.info("required to stop...");
+        closeCom();
     }
 
 }

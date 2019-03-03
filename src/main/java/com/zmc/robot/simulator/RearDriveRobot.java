@@ -26,7 +26,7 @@ public class RearDriveRobot extends AbstractRobot {
 		settings.pwm_diff = 0;
 
 		wheel_radius = 0.065 / 2;
-		// �־� 13cm
+
 		wheel_base_length = 0.150;
 
 		settings.wheelRadius = wheel_radius;
@@ -52,9 +52,11 @@ public class RearDriveRobot extends AbstractRobot {
 		min_w = 0; // (wheel_radius / wheel_base_length) * (min_vel);
 
 		irSensors[0] = new IRSensor(-0.045, 0.05, Math.PI / 2);
-		irSensors[1] = new IRSensor(0.10, 0.04, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
+		// irSensors[1] = new IRSensor(0.10, 0.04, Math.PI / 4); // 0.16,0.045, PI/6
+		// 0.075, 0.035
+		irSensors[1] = new IRSensor(0.08, 0.04, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
 		irSensors[2] = new IRSensor(0.162, 0.0, 0);
-		irSensors[3] = new IRSensor(0.10, -0.04, -Math.PI / 4);
+		irSensors[3] = new IRSensor(0.08, -0.04, -Math.PI / 4);
 		irSensors[4] = new IRSensor(-0.045, -0.05, -Math.PI / 2);
 	}
 

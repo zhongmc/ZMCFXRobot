@@ -13,8 +13,8 @@ public class ScenseView extends Canvas {
 
     private List<Obstacle> obstacles = new ArrayList<Obstacle>();
 
-    private double x, y, theta;
-    private double velocity;
+    // private double x, y, theta;
+    // private double velocity;
 
     // public double width, height;
 
@@ -23,7 +23,7 @@ public class ScenseView extends Canvas {
     // public double x_off = 0, y_off = 0;
     // private double scroll_width, scroll_height; //可滚动的宽度和高度
 
-    private double targetX = -1, targetY = 1;
+    // private double targetX = -1, targetY = 1;
     private double mScale = 100;
     // the canvas dimension
     // private double cw = 5.5, ch = 7.5;
@@ -32,14 +32,14 @@ public class ScenseView extends Canvas {
     // private float[][] mTrails = new float[1000][2];
     // private int mTrailCount = 0;
 
-    private double lastTrailX, lstTrailY;
+    private double trail_x0 = 0, trail_y0 = 0;
 
-    private float[][] mRoutes;
+    private float[][] mRoutes = new float[2000][2];;
     private int routeSize = 0;
 
     private double width, height;
     private GraphicsContext gc;
-    private RearDriveRobotUI robot;
+    // private RearDriveRobotUI robot;
 
     public ScenseView(double width, double height) {
         super(width, height);
@@ -92,7 +92,133 @@ public class ScenseView extends Canvas {
         // robot.draw(gc);
     }
 
+    // 双击鼠标，设定robot 位置
+    public void setRobotPosition(double x, double y) {
+        trail_x0 = (x - width / 2) / mScale;
+        trail_y0 = (height / 2 - y) / mScale;
+    }
+
+    public void resetRobotPosition(double x, double y) {
+        trail_x0 = x;
+        trail_y0 = y;
+        this.invalidate();
+
+    }
+
+    // 使用robot的原始坐标
+    public void setRobotPosition(double x, double y, double theta, double velocity) {
+        GraphicsContext gc = this.getGraphicsContext2D();
+        gc.setStroke(Color.RED);//  设置红色  
+        gc.setLineWidth(1);
+        double xs, ys, xe, ye;
+        xs = (width / 2 + trail_x0 * mScale);
+        ys = (height / 2 - trail_y0 * mScale);
+        xe = (width / 2 + x * mScale);
+        ye = (height / 2 - y * mScale);
+        gc.strokeLine(xs, ys, xe, ye);
+        trail_x0 = x;
+        trail_y0 = y;
+
+    }
+
+    private double route_x, route_y;
+
+    public Point2D startRoutes(double x, double y) {
+        this.invalidate();
+
+        gc.setStroke(Color.CYAN);
+        gc.setLineWidth(3);
+        gc.strokeOval(x - 15, y - 15, 30, 30);
+        route_x = x;
+        route_y = y;
+        mRoutes[0][0] = (float) x;
+        mRoutes[0][1] = (float) y;
+        routeSize = 1;
+
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(2);
+
+        gc.strokeLine(x - 2, y, x + 2, y);
+        gc.strokeLine(x, y - 2, x, y + 2);
+
+        Point2D p = new Point2D();
+        p.x = (float) ((x - width / 2) / mScale);
+        p.y = (float) ((height / 2 - y) / mScale);
+        return p;
+
+    }
+
+    public Point2D addRoutePoint(double x, double y) {
+        gc.setStroke(Color.CYAN);
+        gc.setLineWidth(1);
+
+        gc.strokeLine(route_x, route_y, x, y);
+
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(2);
+
+        gc.strokeLine(x - 2, y, x + 2, y);
+        gc.strokeLine(x, y - 2, x, y + 2);
+
+        route_x = x;
+        route_y = y;
+
+        mRoutes[routeSize][0] = (float) x;
+        mRoutes[routeSize][1] = (float) y;
+        routeSize++;
+
+        Point2D p = new Point2D();
+        p.x = (float) ((x - width / 2) / mScale);
+        p.y = (float) ((height / 2 - y) / mScale);
+        return p;
+
+    }
+
     private void drawRoutes(GraphicsContext gc) {
+
+        if (mRoutes == null || routeSize == 0)
+            return;
+        // draw the route
+
+        gc.setStroke(Color.CYAN);
+        gc.setLineWidth(3);
+        double xs, ys, xe, ye;
+
+        xs = mRoutes[0][0];
+        ys = mRoutes[0][1];
+
+        gc.strokeOval(xs - 15, ys - 15, 30, 30);
+
+        gc.setLineWidth(1);
+        for (int i = 1; i < routeSize; i++) {
+            xe = mRoutes[i][0];
+            ye = mRoutes[i][1];
+            gc.strokeLine(xs, ys, xe, ye);
+            xs = xe;
+            ys = ye;
+        }
+
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(2);
+
+        double x0, y0;
+        for (int i = 0; i < routeSize; i++) {
+            x0 = mRoutes[i][0];
+            y0 = mRoutes[i][1];
+            xs = x0 - 2;
+            xe = x0 + 2;
+            ys = y0;
+            ye = y0;
+            gc.strokeLine(xs, ys, xe, ye);
+            xs = x0;
+            xe = x0;
+            ys = y0 - 2;
+            ye = y0 + 2;
+            gc.strokeLine(xs, ys, xe, ye);
+        }
+    }
+
+    private void drawRoutes1(GraphicsContext gc) {
 
         if (mRoutes == null || routeSize == 0)
             return;

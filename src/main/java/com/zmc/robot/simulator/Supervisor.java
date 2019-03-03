@@ -14,6 +14,8 @@ public class Supervisor {
 	private boolean ignoreObstacle = false;
 	private double velocity = 0.2;
 
+	private double sideSafeDist = 0.12; // 侧面安全距离;
+
 	private final static String TAG = "Supervisor";
 
 	Logger log = Logger.getLogger(TAG);
@@ -150,30 +152,11 @@ public class Supervisor {
 		if (output == null)
 			return;
 
-		// double dis[] = robot.getIRDistances();
-		// double obsDis = Math.min(dis[1], dis[2]);
-		// obsDis = Math.min(obsDis, dis[3]);
-		//
-		// double v1 = output.v;
-		// double v2 = output.v;
-
-		// ����Ŀ��������ϰ�����롢ת��Ƕȣ��Զ�����
-		// if( Math.abs(m_output.w) > 1.5 )
-		// v2 = m_output.v /( Math.log10(Math.abs(m_output.w) + 1) + 1 );
-		// if( Math.abs(output.w) <5 )
-		// v2 = output.v/(Math.abs(output.w/5) + 1); //m_output.w/5
-		// else
-		// v2 = output.v/(Math.abs(output.w) + 1);
-
-		// if( obsDis < 0.2 )
-		// {
-		// v1 = output.v * Math.log10(10*obsDis +1);
-		// }
+		if (m_currentController != null)
+			m_currentController.getControllorInfo(mCtrlInfo);
 
 		double v = output.v;
-
 		// Math.min(v1, v2);
-
 		if (v != 0 && v < robot.min_v)
 			v = 1.01 * robot.min_v;
 
@@ -196,6 +179,8 @@ public class Supervisor {
 	}
 
 	public Output executeGoToGoal(double dt) {
+
+		mCtrlInfo.reset();
 		if (at_goal) {
 			if (m_state != S_STOP)
 				log.info("At Goal! " + counter);
@@ -226,6 +211,9 @@ public class Supervisor {
 			if (at_obstacle) {
 
 				this.m_SlidingMode.execute(robot, m_input, dt);
+
+				m_SlidingMode.getControllorInfo(mCtrlInfo);
+
 				if (m_SlidingMode.slidingLeft())
 					m_FollowWall.dir = 0;
 				else if (m_SlidingMode.slidingRight())
@@ -246,11 +234,14 @@ public class Supervisor {
 				yf = robot.y;
 				theta = robot.theta;
 
+			} else {
+				m_SlidingMode.reset();
 			}
 
 		} else // follow wall
 		{
 			this.m_SlidingMode.execute(robot, m_input, dt);
+			m_SlidingMode.getControllorInfo(mCtrlInfo);
 
 			if (progress_made) {
 
@@ -474,128 +465,6 @@ public class Supervisor {
 		return m_traceRoute.getRecoverPoint();
 	}
 
-	public Output executeGoToGoal2(double dt) {
-
-		if (at_goal) {
-			if (m_state != S_STOP)
-				log.info("At Goal! " + counter);
-
-			m_state = S_STOP; // s_stop;
-			StopMotor();
-			return null;
-		} else if (danger) {
-			if (m_state != S_STOP)
-				log.info("Danger! " + counter + "; ird=" + irDistance);
-			m_state = S_STOP; // s_stop;
-			StopMotor();
-			return null;
-		}
-
-		if (m_state == S_STOP && !unsafe) // recover from stop
-		{
-			m_state = S_GTG; // gotoGoal;
-			m_currentController = m_GoToGoal;
-			m_GoToGoal.reset();
-		}
-
-		if (unsafe) // 1 avoid obstacle
-		{
-			if (m_state != S_AVO) {
-				log.info("unsafe , change to avoid Obstacle " + counter + ", IDS=" + irDistance);
-				m_AvoidObstacle.reset();
-			}
-			m_state = S_AVO; // avoidObstacle;
-			m_currentController = m_AvoidObstacle;
-		} else {
-			// Serial.println("exec sliding");
-
-			m_SlidingMode.execute(robot, m_input, dt);
-
-			if (m_state == S_GTG) {
-				if (at_obstacle && m_SlidingMode.slidingLeft()) {
-					m_FollowWall.dir = 0; // left
-					m_currentController = m_FollowWall;
-					m_state = S_FW; // followWall;
-
-					log.info("Change to follow wall left state " + counter + ", IDS=" + irDistance);
-					m_FollowWall.reset();
-					set_progress_point();
-				} else if (at_obstacle && m_SlidingMode.slidingRight()) {
-					m_FollowWall.dir = 1; // right
-					m_currentController = m_FollowWall;
-					m_state = S_FW; // followWall;
-					log.info("Change to follow wall right state " + counter + ", IDS=" + irDistance);
-					m_FollowWall.reset();
-					set_progress_point();
-				} else if (at_obstacle) {
-					m_currentController = m_AvoidObstacle;
-					m_state = S_AVO; // avoidObstacle;
-					m_AvoidObstacle.reset();
-					log.info("Change to Avoid obstacle (from GTG )" + counter);
-				}
-				// else
-				// {
-				// m_currentController = m_GoToGoal;
-				// // log.info( "Set to goto goal! ");
-				// }
-			} else if (m_state == S_FW) // followWall )
-			{
-
-				if (progress_made) {
-					if (m_FollowWall.dir == 0 && m_SlidingMode.quitSlidingLeft())// !m_SlidingMode.slidingLeft())
-					{
-						m_state = S_GTG; // gotoGoal;
-						m_currentController = m_GoToGoal;
-						m_GoToGoal.reset();
-						log.info("Change to go to goal state(FW L PM) " + counter + ", IDS=" + irDistance);
-
-					} else if (m_FollowWall.dir == 1 && m_SlidingMode.quitSlidingRight())// !m_SlidingMode.slidingRight())
-					{
-						m_state = S_GTG; // gotoGoal;
-						m_currentController = m_GoToGoal;
-						m_GoToGoal.reset();
-						log.info("Change to go to goal state (FW R PM) " + counter + ", IDS=" + irDistance);
-					}
-				}
-			} else if (m_state == S_AVO) // avoidObstacle)
-			{
-				if (!at_obstacle) {
-					if (m_SlidingMode.slidingLeft()) {
-						m_FollowWall.dir = 0; // left
-						m_currentController = m_FollowWall;
-						m_state = S_FW; // followWall;
-						m_FollowWall.reset();
-						set_progress_point();
-						log.info("Change to follow wall left! " + counter + ", IDS=" + irDistance);
-
-					} else if (m_SlidingMode.slidingRight()) {
-						m_FollowWall.dir = 1; // right
-						m_currentController = m_FollowWall;
-						m_state = S_FW; // followWall;
-						m_FollowWall.reset();
-						set_progress_point();
-
-						log.info("Change to follow wall right! " + counter + ", IDS=" + irDistance);
-
-					} else {
-						m_state = S_GTG; // gotoGoal;
-						m_currentController = m_GoToGoal;
-						m_GoToGoal.reset();
-						log.info("Change to go to goal state (from AVO) " + counter + ", IDS=" + irDistance);
-
-					}
-				}
-			}
-
-		}
-
-		if (m_currentController != null) {
-			return m_currentController.execute(robot, m_input, dt);
-		}
-
-		return null;
-	}
-
 	void StopMotor() {
 
 	}
@@ -660,12 +529,21 @@ public class Supervisor {
 			at_obstacle = false;
 			// return;
 			irDistance = 100;
-			for (int i = 1; i < 4; i++) {
-				if (irSensors[i].distance < d_at_obs)
-					at_obstacle = true;
-				if (irDistance > irSensors[i].distance)
-					irDistance = irSensors[i].distance;
-			}
+
+			if (irSensors[2].distance < d_at_obs)
+				at_obstacle = true;
+			double sd = sideSafeDist / Math.sin(irSensors[1].theta_s);
+			if (irSensors[1].distance < sd)
+				at_obstacle = true;
+			if (irSensors[3].distance < sd)
+				at_obstacle = true;
+
+			// for (int i = 1; i < 4; i++) {
+			// if (irSensors[i].distance < d_at_obs)
+			// at_obstacle = true;
+			// if (irDistance > irSensors[i].distance)
+			// irDistance = irSensors[i].distance;
+			// }
 			// if( irSensors[2].distance < d_at_obs )
 			// at_obstacle = true;
 		}
@@ -725,12 +603,6 @@ public class Supervisor {
 	private ControllerInfo mCtrlInfo = new ControllerInfo();
 
 	public ControllerInfo getControllerInfo() {
-		mCtrlInfo.reset();
-
-		this.m_SlidingMode.getControllorInfo(mCtrlInfo);
-		if (m_currentController != null)
-			this.m_currentController.getControllorInfo(mCtrlInfo);
-		mCtrlInfo.uGotoGoal = null;
 		return mCtrlInfo;
 	}
 

@@ -5,6 +5,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import com.sun.javafx.geom.Point2D;
+import com.zmc.robot.simulator.ControllerInfo;
 
 public class RobotView extends Canvas {
 
@@ -12,6 +13,7 @@ public class RobotView extends Canvas {
 
     private double x, y, theta;
     private double velocity;
+    private ControllerInfo mCtrlInfo = null;
 
     // public double width, height;
 
@@ -53,7 +55,7 @@ public class RobotView extends Canvas {
     public void draw(GraphicsContext gc) {
 
         gc.setStroke(Color.RED);//  设置红色  
-        gc.setLineWidth(2);
+        gc.setLineWidth(1);
 
         // gtg target
         gc.strokeLine((width / 2 + targetX * mScale - 20), (height / 2 - targetY * mScale),
@@ -62,6 +64,63 @@ public class RobotView extends Canvas {
                 (width / 2 + targetX * mScale), (height / 2 - targetY * mScale + 20));
 
         robot.draw(gc);
+
+        if (mCtrlInfo == null)
+            return;
+
+        double xs, ys, xe, ye;
+
+        double x, y;
+        x = robot.x;
+        y = robot.y;
+
+        xs = width / 2 + mScale * x;
+        ys = height / 2 - mScale * y;
+
+        if (mCtrlInfo.uAoidObstacle != null) {
+            gc.setStroke(Color.GREEN);
+            xe = (float) (width / 2 + mScale * (x + mCtrlInfo.uAoidObstacle.x));
+            ye = (float) (height / 2 - mScale * (y + mCtrlInfo.uAoidObstacle.y));
+
+            gc.strokeLine(xs, ys, xe, ye);
+
+        }
+
+        if (mCtrlInfo.uFollowWall != null) {
+            gc.setStroke(Color.RED);
+            xe = (float) (width / 2 + mScale * (x + mCtrlInfo.uFollowWall.x));
+            ye = (float) (height / 2 - mScale * (y + mCtrlInfo.uFollowWall.y));
+
+            gc.strokeLine(xs, ys, xe, ye);
+
+        }
+
+        if (mCtrlInfo.uGotoGoal != null) {
+            gc.setStroke(Color.CYAN);
+            xe = (float) (width / 2 + mScale * (x + mCtrlInfo.uGotoGoal.x));
+            ye = (float) (height / 2 - mScale * (y + mCtrlInfo.uGotoGoal.y));
+
+            gc.strokeLine(xs, ys, xe, ye);
+
+        }
+
+        if (mCtrlInfo.uFwP != null) {
+            gc.setStroke(Color.BLUE);
+            xe = (float) (width / 2 + mScale * (x + mCtrlInfo.uFwP.x));
+            ye = (float) (height / 2 - mScale * (y + mCtrlInfo.uFwP.y));
+
+            gc.strokeLine(xs, ys, xe, ye);
+
+        }
+
+        if (mCtrlInfo.p0 != null) {
+            gc.setStroke(Color.CYAN);
+            xs = (float) (width / 2 + mScale * (mCtrlInfo.p0.x));
+            ys = (float) (height / 2 - mScale * (mCtrlInfo.p0.y));
+            xe = (float) (width / 2 + mScale * (mCtrlInfo.p1.x));
+            ye = (float) (height / 2 - mScale * (mCtrlInfo.p1.y));
+            gc.strokeLine(xs, ys, xe, ye);
+        }
     }
 
     public Point2D getTarget() {
@@ -96,6 +155,11 @@ public class RobotView extends Canvas {
 
     public double[] getIrDistances() {
         return robot.getIrDistances();
+    }
+
+    // 请再setRobotPosition前调用
+    public void setControllerInfo(ControllerInfo ctrlInfo) {
+        this.mCtrlInfo = ctrlInfo;
     }
 
     // 使用robot的原始坐标

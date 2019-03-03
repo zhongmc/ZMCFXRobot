@@ -1,9 +1,9 @@
 package com.zmc.robot.fxrobot;
 
+import com.zmc.robot.fxrobotui.BalanceRobotPane;
 import com.zmc.robot.fxrobotui.LocalSimulatorPane;
 import com.zmc.robot.fxrobotui.RemoteSimulatorPane;
 import com.zmc.robot.fxrobotui.SettingsPane;
-import com.zmc.robot.fxrobotui.SimulatorPane;
 import com.zmc.robot.utils.TextAreaAppender;
 
 import javafx.application.Application;
@@ -31,6 +31,8 @@ public class ZMCFXRobot extends Application {
     private LocalSimulatorPane localSimulatorPane;
     private RemoteSimulatorPane remoteSimulatorPane;
 
+    private BalanceRobotPane balancePane;
+
     // private RobotCanvasView robotView;
 
     @Override
@@ -40,18 +42,23 @@ public class ZMCFXRobot extends Application {
 
         localSimulatorPane = new LocalSimulatorPane();
         remoteSimulatorPane = new RemoteSimulatorPane();
+        balancePane = new BalanceRobotPane();
 
         Tab tabSimulator = new Tab();
         tabSimulator.setText("Simulator");
         tabSimulator.setContent(localSimulatorPane.getMainPane());
 
+        // Tab tabRemoteSimulator = new Tab();
+        // tabRemoteSimulator.setText("Remote Simulator");
+        // tabRemoteSimulator.setContent(remoteSimulatorPane.getMainPane());
+
         Tab tabRemoteSimulator = new Tab();
         tabRemoteSimulator.setText("Remote Simulator");
         tabRemoteSimulator.setContent(remoteSimulatorPane.getMainPane());
 
-        Tab tabSimulator1 = new Tab();
-        tabSimulator1.setText("Simulator1");
-        tabSimulator1.setContent(new SimulatorPane().getMainPane());
+        Tab tabBalance = new Tab();
+        tabBalance.setText("Balance");
+        tabBalance.setContent(balancePane.getMainPane());
 
         settingsPane = new SettingsPane();
 
@@ -59,7 +66,7 @@ public class ZMCFXRobot extends Application {
         tabSettings.setText("Settings");
         tabSettings.setContent(settingsPane.getMainPane());
 
-        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabSimulator1, tabSettings);
+        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance, tabSettings);
 
         SplitPane splitPane = new SplitPane();
 
@@ -86,6 +93,7 @@ public class ZMCFXRobot extends Application {
 
         localSimulatorPane.stop();
         remoteSimulatorPane.stop();
+        balancePane.stop();
 
     }
 

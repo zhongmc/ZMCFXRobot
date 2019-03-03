@@ -43,7 +43,7 @@ public class RearDriveRobotUI extends AbstractRobotUI {
 			{ 0.031, -0.055, 1 } };
 
 	// {0.16, 0.045},{0.075, 0.035}
-	final double ir_positions[][] = { { -0.045, 0.050 }, { 0.10, 0.04 }, { 0.162, 0.0 }, { 0.10, -0.04 },
+	final double ir_positions[][] = { { -0.045, 0.050 }, { 0.08, 0.04 }, { 0.162, 0.0 }, { 0.08, -0.04 },
 			{ -0.045, -0.050 } };
 
 	// double ir_positions[][] = {{-0.0582,0.0584}, {0.05725, 0.03555},{0.0686,
