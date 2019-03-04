@@ -155,4 +155,39 @@ public class CurveView extends Canvas {
 		// canvas.drawLine(0, height/2, width, height/2, paint);
 
 	}
+
+	@Override
+	public double maxHeight(double width) {
+		return 2560;
+	}
+
+	@Override
+	public double prefHeight(double width) {
+		return minHeight(width);
+	}
+
+	@Override
+	public double minWidth(double height) {
+		return 1024;
+	}
+
+	@Override
+	public double maxWidth(double height) {
+		return 10000;
+	}
+
+	@Override
+	public boolean isResizable() {
+		return true;
+	}
+
+	@Override
+	public void resize(double width, double height) {
+		super.setWidth(width);
+		super.setHeight(height);
+		this.width = width;
+		this.height = height;
+		this.invalidate();
+		// paint();
+	}
 }
