@@ -77,10 +77,11 @@ public abstract class AbstractRobotUI {
 		this.obstacles = obs;
 	}
 
-	public void setCavasDimension(double width, double height) {
-		getTransformationMatrix(width / 2 + x * mScale, height / 2 - y * mScale, theta, mScale);
+	public void setCavasDimension(double width, double height, double scale) {
+		this.mScale = scale;
 		this.width = width;
 		this.height = height;
+		getTransformationMatrix(width / 2 + x * mScale, height / 2 - y * mScale, theta, mScale);
 	}
 
 	public void addComponent(ComponentInfo component) {

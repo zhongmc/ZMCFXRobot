@@ -17,6 +17,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -200,7 +201,11 @@ public class LocalSimulatorPane implements Runnable {
         s1.setContent(stackPane);
 
         border.setCenter(s1);
-        border.setRight(createLeftPane());
+        // border.setRight(createLeftPane());
+
+        ScrollPane s2 = new ScrollPane();
+        s2.setContent(createLeftPane());
+        border.setRight(s2);
 
         timmerThread = new Thread(this);
         timmerThread.start();
@@ -287,9 +292,41 @@ public class LocalSimulatorPane implements Runnable {
 
         });
 
-        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, setRouteButton, traceRouteCheckBox);
+        Slider slider = new Slider();
+        slider.setMin(50);
+        slider.setMax(200);
+        slider.setValue(100);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(50);
+        slider.setMinorTickCount(10);
+        slider.setBlockIncrement(20);
+        slider.setSnapToTicks(true);
+
+        final Label scalingValue = new Label("100%");
+
+        slider.valueProperty().addListener((ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
+            double scale = new_val.doubleValue();
+            zoomRobotView(scale);
+            scalingValue.setText(String.format("%.2f", scale) + "%");
+        });
+
+        Button optionButton = new Button("Options");
+
+        optionButton.setOnAction((ActionEvent) -> {
+            SettingsDialog dialog = new SettingsDialog(null);
+            dialog.showAndWait();
+        });
+
+        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, setRouteButton, traceRouteCheckBox, slider,
+                scalingValue, optionButton);
 
         return vbButtons;
+    }
+
+    private void zoomRobotView(double scale) {
+        robotView.setScale(scale);
+        scenseView.setScale(scale);
     }
 
     private static final int SINGLE_CLICK_DELAY = 350;

@@ -71,7 +71,8 @@ public class RearDriveRobot extends AbstractRobot {
 		if (nvel > max_vel)
 			nvel = max_vel;
 
-		double retVal = 0.5729 * nvel * nvel - 5.1735 * nvel + 86.516;
+		double retVal = 6.257 * nvel + 46.868;
+		// double retVal = 0.5729 * nvel * nvel - 5.1735 * nvel + 86.516;
 
 		if (vel >= 0)
 			return retVal;
@@ -90,7 +91,9 @@ public class RearDriveRobot extends AbstractRobot {
 		if (nvel > max_vel)
 			nvel = max_vel;
 
-		double retVal = 0.5649 * nvel * nvel - 4.3156 * nvel + 80.706;
+		double retVal = 6.257 * nvel + 46.868;
+
+		// double retVal = 0.5649 * nvel * nvel - 4.3156 * nvel + 80.706;
 		// 0.4747*nvel*nvel - 3.956*nvel + 80.706;
 		if (vel >= 0)
 			return retVal;

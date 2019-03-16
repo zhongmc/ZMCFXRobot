@@ -24,6 +24,9 @@ public class RobotView extends Canvas {
 
     private double targetX = -1, targetY = 1;
     private double mScale = 100;
+
+    private double canvasWidth, canvasHeight; // 画布大小
+
     // the canvas dimension
     // private double cw = 5.5, ch = 7.5;
 
@@ -31,17 +34,50 @@ public class RobotView extends Canvas {
     private GraphicsContext gc;
     private RearDriveRobotUI robot;
 
-    public RobotView(double width, double height) {
-        super(width, height);
+    public RobotView(double canvasWidth, double canvasHeight, double scale) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.mScale = scale;
 
-        this.width = width;
-        this.height = height;
+        this.width = canvasWidth * mScale;
+        this.height = canvasHeight * mScale;
+        this.setWidth(width);
+        this.setHeight(height);
 
         robot = new RearDriveRobotUI();
 
         // robot.setObstacles(obstacles);
 
-        robot.setCavasDimension(width, height);
+        robot.setCavasDimension(width, height, scale);
+        robot.setPosition(0.5, 0.5, Math.PI / 4);
+        gc = getGraphicsContext2D();
+        draw(gc);
+    }
+
+    public void setScale(double scale) {
+        this.mScale = scale;
+
+        this.width = canvasWidth * mScale;
+        this.height = canvasHeight * mScale;
+        this.setWidth(width);
+        this.setHeight(height);
+        robot.setCavasDimension(width, height, scale);
+        invalidate();
+    }
+
+    public RobotView(double width, double height) {
+        super(width, height);
+
+        this.width = width;
+        this.height = height;
+        canvasWidth = width / mScale;
+        canvasHeight = height / mScale;
+
+        robot = new RearDriveRobotUI();
+
+        // robot.setObstacles(obstacles);
+
+        robot.setCavasDimension(width, height, mScale);
         robot.setPosition(0.5, 0.5, Math.PI / 4);
         gc = getGraphicsContext2D();
         draw(gc);
@@ -184,6 +220,51 @@ public class RobotView extends Canvas {
 
     public void setObstacles(List<Obstacle> obstacles) {
         robot.setObstacles(obstacles);
+    }
+
+    @Override
+    public double minHeight(double h) {
+        return height;
+    }
+
+    @Override
+    public double maxHeight(double h) {
+        return height;
+    }
+
+    @Override
+    public double prefHeight(double h) {
+        return minHeight(h);
+    }
+
+    @Override
+    public double minWidth(double w) {
+        return width;
+    }
+
+    @Override
+    public double maxWidth(double w) {
+        return width;
+    }
+
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
+    @Override
+    public void resize(double width, double height) {
+
+        System.out.println("resize: " + mScale);
+        System.out.println("set to w " + width + ", h " + height);
+        System.out.println("org w " + this.width + ", h " + this.height);
+
+        super.setWidth(width);
+        super.setHeight(height);
+        this.width = width;
+        this.height = height;
+        this.invalidate();
+        // paint();
     }
 
 }

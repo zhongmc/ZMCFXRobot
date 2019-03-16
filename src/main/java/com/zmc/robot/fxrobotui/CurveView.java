@@ -157,6 +157,11 @@ public class CurveView extends Canvas {
 	}
 
 	@Override
+	public double minHeight(double height) {
+		return 800;
+	}
+
+	@Override
 	public double maxHeight(double width) {
 		return 2560;
 	}

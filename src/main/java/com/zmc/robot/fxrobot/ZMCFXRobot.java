@@ -26,7 +26,7 @@ public class ZMCFXRobot extends Application {
 
     // private final Menu comMenu = new Menu("COMM Port");
     private final TextArea loggingView = new TextArea();
-    private SettingsPane settingsPane;
+    // private SettingsPane settingsPane;
 
     private LocalSimulatorPane localSimulatorPane;
     private RemoteSimulatorPane remoteSimulatorPane;
@@ -60,13 +60,13 @@ public class ZMCFXRobot extends Application {
         tabBalance.setText("Balance");
         tabBalance.setContent(balancePane.getMainPane());
 
-        settingsPane = new SettingsPane();
+        // settingsPane = new SettingsPane();
 
-        Tab tabSettings = new Tab();
-        tabSettings.setText("Settings");
-        tabSettings.setContent(settingsPane.getMainPane());
+        // Tab tabSettings = new Tab();
+        // tabSettings.setText("Settings");
+        // tabSettings.setContent(settingsPane.getMainPane());
 
-        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance, tabSettings);
+        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance);// , tabSettings);
 
         SplitPane splitPane = new SplitPane();
 

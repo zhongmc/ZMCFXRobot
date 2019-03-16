@@ -238,9 +238,10 @@ public class Obstacle {
 		// return new PointF((float)x1, (float)y1);
 	}
 
-	public void setCavasDimension(double width, double height) {
+	public void setCavasDimension(double width, double height, double scale) {
 		this.width = width;
 		this.height = height;
+		this.mScale = scale;
 		initPath();
 	}
 }

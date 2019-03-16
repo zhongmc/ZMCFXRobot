@@ -31,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.control.Slider;
 
 public class RemoteSimulatorPane {
 
@@ -141,7 +142,10 @@ public class RemoteSimulatorPane {
         s1.setContent(stackPane);
 
         border.setCenter(s1);
-        border.setRight(createLeftPane());
+        // border.setRight(createLeftPane());
+        ScrollPane s2 = new ScrollPane();
+        s2.setContent(createLeftPane());
+        border.setRight(s2);
 
     }
 
@@ -176,6 +180,32 @@ public class RemoteSimulatorPane {
                 stopRobot();
             }
 
+        });
+
+        Slider slider = new Slider();
+        slider.setMin(50);
+        slider.setMax(200);
+        slider.setValue(100);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(50);
+        slider.setMinorTickCount(10);
+        slider.setBlockIncrement(20);
+        slider.setSnapToTicks(true);
+
+        final Label scalingValue = new Label("100%");
+
+        vbButtons.getChildren().add(slider);
+
+        vbButtons.getChildren().add(scalingValue);
+
+        slider.valueProperty().addListener((ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
+            double scale = new_val.doubleValue();
+            zoomRobotView(scale);
+            double sv = slider.getValue();
+            System.out.println("Scale value:" + sv);
+
+            scalingValue.setText(String.format("%.2f", scale) + "%");
         });
 
         simulateModeCheckBox = new CheckBox();
@@ -259,6 +289,11 @@ public class RemoteSimulatorPane {
         this.enableButtons();
 
         return vbButtons;
+    }
+
+    private void zoomRobotView(double scale) {
+        robotView.setScale(scale);
+        scenseView.setScale(scale);
     }
 
     private List<String> comPorts;

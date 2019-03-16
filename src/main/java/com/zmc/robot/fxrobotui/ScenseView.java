@@ -18,13 +18,12 @@ public class ScenseView extends Canvas {
 
     // public double width, height;
 
-    public double canvas_width, canvas_height;
+    // public double canvas_width, canvas_height;
     // private double scroll_x, scroll_y;
     // public double x_off = 0, y_off = 0;
     // private double scroll_width, scroll_height; //可滚动的宽度和高度
 
     // private double targetX = -1, targetY = 1;
-    private double mScale = 100;
     // the canvas dimension
     // private double cw = 5.5, ch = 7.5;
 
@@ -38,14 +37,35 @@ public class ScenseView extends Canvas {
     private int routeSize = 0;
 
     private double width, height;
+    private double mScale = 100;
+    private double canvasWidth, canvasHeight; // 画布大小
+
     private GraphicsContext gc;
     // private RearDriveRobotUI robot;
+
+    public ScenseView(double canvasWidth, double canvasHeight, double scale) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.mScale = scale;
+
+        this.width = canvasWidth * mScale;
+        this.height = canvasHeight * mScale;
+        this.setWidth(width);
+        this.setHeight(height);
+        initObstacles();
+        gc = getGraphicsContext2D();
+        draw(gc);
+
+    }
 
     public ScenseView(double width, double height) {
         super(width, height);
 
         this.width = width;
         this.height = height;
+
+        canvasWidth = width / mScale;
+        canvasHeight = height / mScale;
 
         initObstacles();
 
@@ -55,6 +75,28 @@ public class ScenseView extends Canvas {
         // robot.setPosition(0.5, 0.5, Math.PI / 4);
         gc = getGraphicsContext2D();
         draw(gc);
+    }
+
+    public void setScale(double scale) {
+
+        System.out.println("Set scale: " + scale);
+        System.out.println("w " + width + ", h " + height);
+        this.mScale = scale;
+
+        this.width = canvasWidth * scale;
+        this.height = canvasHeight * scale;
+
+        System.out.println("prefered: w " + width + ", h " + height);
+
+        this.setWidth(width);
+        this.setHeight(height);
+        for (Obstacle obs : obstacles) {
+            obs.setCavasDimension(width, height, scale);
+        }
+
+        System.out.println("after: w " + getWidth() + ", h " + getHeight());
+
+        invalidate();
     }
 
     public void invalidate() {
@@ -131,9 +173,6 @@ public class ScenseView extends Canvas {
         gc.strokeOval(x - 15, y - 15, 30, 30);
         route_x = x;
         route_y = y;
-        mRoutes[0][0] = (float) x;
-        mRoutes[0][1] = (float) y;
-        routeSize = 1;
 
         gc.setStroke(Color.RED);
         gc.setLineWidth(2);
@@ -144,6 +183,10 @@ public class ScenseView extends Canvas {
         Point2D p = new Point2D();
         p.x = (float) ((x - width / 2) / mScale);
         p.y = (float) ((height / 2 - y) / mScale);
+        mRoutes[0][0] = (float) p.x;
+        mRoutes[0][1] = (float) p.y;
+        routeSize = 1;
+
         return p;
 
     }
@@ -163,18 +206,18 @@ public class ScenseView extends Canvas {
         route_x = x;
         route_y = y;
 
-        mRoutes[routeSize][0] = (float) x;
-        mRoutes[routeSize][1] = (float) y;
-        routeSize++;
-
         Point2D p = new Point2D();
         p.x = (float) ((x - width / 2) / mScale);
         p.y = (float) ((height / 2 - y) / mScale);
+        mRoutes[routeSize][0] = (float) p.x;
+        mRoutes[routeSize][1] = (float) p.y;
+        routeSize++;
+
         return p;
 
     }
 
-    private void drawRoutes(GraphicsContext gc) {
+    private void drawRoutes1(GraphicsContext gc) {
 
         if (mRoutes == null || routeSize == 0)
             return;
@@ -218,7 +261,7 @@ public class ScenseView extends Canvas {
         }
     }
 
-    private void drawRoutes1(GraphicsContext gc) {
+    private void drawRoutes(GraphicsContext gc) {
 
         if (mRoutes == null || routeSize == 0)
             return;
@@ -349,32 +392,77 @@ public class ScenseView extends Canvas {
         try {
             Obstacle obstacle = new Obstacle(obstacle1);
             obstacle.setPosition(-0.8, 0, 0);
-            obstacle.setCavasDimension(width, height);
+            obstacle.setCavasDimension(width, height, mScale);
             addObstacle(obstacle);
 
             obstacle = new Obstacle(obstacle3);
             obstacle.setPosition(-0.5, 0, 0);
-            obstacle.setCavasDimension(width, height);
+            obstacle.setCavasDimension(width, height, mScale);
             addObstacle(obstacle);
 
             obstacle = new Obstacle(obstacle2);
             obstacle.setPosition(-1, -2, 0);
-            obstacle.setCavasDimension(width, height);
+            obstacle.setCavasDimension(width, height, mScale);
             addObstacle(obstacle);
 
             obstacle = new Obstacle(obstacle4);
             obstacle.setPosition(-2, 1, 0);
-            obstacle.setCavasDimension(width, height);
+            obstacle.setCavasDimension(width, height, mScale);
             addObstacle(obstacle);
 
             obstacle = new Obstacle(border, Color.RED, false);
             obstacle.setPosition(0, 0, 0);
-            obstacle.setCavasDimension(width, height);
+            obstacle.setCavasDimension(width, height, mScale);
             addObstacle(obstacle);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public double minHeight(double h) {
+        return this.height;
+    }
+
+    @Override
+    public double maxHeight(double h) {
+        return this.height;
+    }
+
+    @Override
+    public double prefHeight(double h) {
+        return minHeight(h);
+    }
+
+    @Override
+    public double minWidth(double w) {
+        return width;
+    }
+
+    @Override
+    public double maxWidth(double w) {
+        return width;
+    }
+
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
+    @Override
+    public void resize(double width, double height) {
+
+        System.out.println("resize: " + mScale);
+        System.out.println("set to w " + width + ", h " + height);
+        System.out.println("org w " + this.width + ", h " + this.height);
+
+        super.setWidth(width);
+        super.setHeight(height);
+        this.width = width;
+        this.height = height;
+        this.invalidate();
+        // paint();
     }
 
     double obstacle1[][] = { { 0, 0, 1 }, { 0.35, 0, 1 }, { 0.35, -0.30, 1 }, { 0, -0.30, 1 } };

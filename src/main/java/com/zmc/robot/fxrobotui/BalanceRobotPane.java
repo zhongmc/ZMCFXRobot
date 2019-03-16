@@ -31,6 +31,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 
 public class BalanceRobotPane {
 
@@ -57,6 +61,11 @@ public class BalanceRobotPane {
 
     private SerialPortUtil serialPortUtil;
     private String selectedCom;
+
+    private TextField kpField, kdField; // kiField,
+    private TextField skpField, skiField; // , skdField;
+    private TextField tkpField;
+    private GridPane grid;
 
     private boolean isGoing = false;
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
@@ -126,8 +135,9 @@ public class BalanceRobotPane {
         ScrollPane s1 = new ScrollPane();
         s1.setContent(curveView);
         border.setCenter(s1);
-
-        border.setRight(createLeftPane());
+        ScrollPane s2 = new ScrollPane();
+        s2.setContent(createLeftPane());
+        border.setRight(s2);
 
     }
 
@@ -173,6 +183,122 @@ public class BalanceRobotPane {
                 });
 
         vbButtons.getChildren().add(simulateModeCheckBox);
+
+        grid = new GridPane();
+        grid.setAlignment(Pos.CENTER); // Override default
+        grid.setHgap(10);
+        grid.setVgap(12);
+
+        // Use column constraints to set properties for columns in the grid
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setHalignment(HPos.RIGHT); // Override default
+        grid.getColumnConstraints().add(column1);
+
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHalignment(HPos.LEFT); // Override default
+        grid.getColumnConstraints().add(column2);
+
+        kpField = new TextField();
+        // kiField = new TextField();
+        kdField = new TextField();
+
+        int rowIdx = 0;
+        Label label = new Label("PID for balance     ");
+        grid.add(label, 0, 0, 2, 2);
+
+        rowIdx += 2;
+        label = new Label("KP:");
+        grid.add(label, 0, rowIdx);
+        grid.add(kpField, 1, rowIdx);
+
+        // rowIdx++;
+        // label = new Label("KI:");
+        // grid.add(label, 0, rowIdx);
+        // grid.add(kiField, 1, rowIdx);
+
+        rowIdx++;
+        label = new Label("KD:");
+        grid.add(label, 0, rowIdx);
+        grid.add(kdField, 1, rowIdx);
+        rowIdx++;
+
+        rowIdx++;
+        Button rButton = new Button("Read");
+        Button sButton = new Button("Set");
+
+        rButton.setOnAction((ActionEvent e) -> {
+            readBalancePID();
+        });
+        sButton.setOnAction((ActionEvent e) -> {
+            setBalancePID();
+        });
+
+        grid.add(rButton, 0, rowIdx);
+        grid.add(sButton, 1, rowIdx);
+
+        skpField = new TextField();
+        skiField = new TextField();
+        // skdField = new TextField();
+
+        rowIdx += 2;
+        label = new Label("PID for Speed     ");
+        grid.add(label, 0, rowIdx, 2, 2);
+
+        rowIdx += 2;
+        label = new Label("KP:");
+        grid.add(label, 0, rowIdx);
+        grid.add(skpField, 1, rowIdx);
+
+        rowIdx++;
+        label = new Label("KI:");
+        grid.add(label, 0, rowIdx);
+        grid.add(skiField, 1, rowIdx);
+
+        rowIdx++;
+        // label = new Label("KD:");
+        // grid.add(label, 0, rowIdx);
+        // grid.add(skdField, 1, rowIdx);
+        // rowIdx++;
+
+        Button srButton = new Button("Read");
+        Button ssButton = new Button("Set");
+
+        srButton.setOnAction((ActionEvent e) -> {
+            readSpeedPID();
+        });
+        ssButton.setOnAction((ActionEvent e) -> {
+            setSpeedPID();
+        });
+
+        grid.add(srButton, 0, rowIdx);
+        grid.add(ssButton, 1, rowIdx);
+
+        tkpField = new TextField();
+
+        rowIdx += 2;
+        label = new Label("PID for Turning     ");
+        grid.add(label, 0, rowIdx, 2, 2);
+
+        rowIdx += 2;
+        label = new Label("KP:");
+        grid.add(label, 0, rowIdx);
+        grid.add(tkpField, 1, rowIdx);
+
+        rowIdx++;
+
+        Button trButton = new Button("Read");
+        Button tsButton = new Button("Set");
+        grid.add(trButton, 0, rowIdx);
+        grid.add(tsButton, 1, rowIdx);
+
+        trButton.setOnAction((ActionEvent e) -> {
+            readTurnPID();
+        });
+        tsButton.setOnAction((ActionEvent e) -> {
+            setTurnPID();
+        });
+
+        vbButtons.getChildren().add(grid);
 
         vbButtons.getChildren().add(new Label("Comm port："));
 
@@ -245,6 +371,83 @@ public class BalanceRobotPane {
         this.enableButtons();
 
         return vbButtons;
+    }
+
+    private void readTurnPID() {
+        this.sendCmd("PID4;");
+    }
+
+    private void setTurnPID() {
+        String cmdStr = "PID4" + tkpField.getText() + ",0,0;"; // + skiField.getText() + ",0;";
+        sendCmd(cmdStr);
+        log.info(cmdStr);
+    }
+
+    private void readSpeedPID() {
+        this.sendCmd("PID3;");
+    }
+
+    private void setSpeedPID() {
+        String cmdStr = "PID3" + skpField.getText() + "," + skiField.getText() + ",0;";
+        sendCmd(cmdStr);
+        log.info(cmdStr);
+    }
+
+    private void readBalancePID() {
+        this.sendCmd("PID2;");
+
+    }
+
+    private void setBalancePID() {
+        String cmdStr = "PID2" + kpField.getText() + ",0," + kdField.getText() + ";";
+        sendCmd(cmdStr);
+        log.info(cmdStr);
+    }
+
+    private void setPIDValueToTextField(String buf, int type) {
+
+        int intVal;
+        int idx1, idx2;
+        idx1 = 0;
+        String tmp;
+        idx2 = buf.indexOf(',', idx1);
+        tmp = buf.substring(idx1, idx2);
+        String kpStr = getFormatDouble(tmp, 3);
+
+        idx1 = idx2 + 1;
+        idx2 = buf.indexOf(',', idx1);
+        tmp = buf.substring(idx1, idx2);
+        String kiStr = getFormatDouble(tmp, 3);
+
+        tmp = buf.substring(idx2 + 1);
+        String kdStr = getFormatDouble(tmp, 3);
+        if (type == 2) {
+            kpField.setText(kpStr);
+            // kiField.setText(kiStr);
+            kdField.setText(kdStr);
+        } else if (type == 3) {
+            skpField.setText(kpStr);
+            skiField.setText(kiStr);
+            // skdField.setText(kdStr);
+
+        } else if (type == 4) {
+            tkpField.setText(kpStr);
+
+        }
+
+    }
+
+    private String getFormatDouble(String valStr, int len) {
+        if (valStr.length() > len) {
+            int idx = valStr.length() - len;
+            String retStr = valStr.substring(0, idx) + "." + valStr.substring(idx);
+            return retStr;
+        } else {
+            String retStr = "0.";
+            for (int i = 0; i < valStr.length() - len; i++)
+                retStr = retStr + "0";
+            return retStr + valStr;
+        }
     }
 
     private List<String> comPorts;
@@ -494,7 +697,26 @@ public class BalanceRobotPane {
             });
 
             // curveView.addData(angleValue, count);
+        } else if (strValue.startsWith("PID")) {
+
+            int type = buf[3] - '0';
+            Platform.runLater(() -> {
+                setPIDValueToTextField(strValue.substring(4), type);
+            });
+
         }
+
+        // else if (strValue.startsWith("PB")) {
+        // Platform.runLater(() -> {
+        // setPIDValueToTextField(strValue.substring(2), 2);
+
+        // });
+        // } else if (strValue.startsWith("PS")) {
+        // Platform.runLater(() -> {
+        // setPIDValueToTextField(strValue.substring(2), 3);
+
+        // });
+        // }
 
         else {
             if (len > 2)
