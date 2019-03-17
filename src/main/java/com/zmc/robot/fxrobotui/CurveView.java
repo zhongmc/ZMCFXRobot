@@ -168,7 +168,7 @@ public class CurveView extends Canvas {
 
 	@Override
 	public double prefHeight(double width) {
-		return minHeight(width);
+		return 1440;
 	}
 
 	@Override
@@ -181,6 +181,12 @@ public class CurveView extends Canvas {
 		return 10000;
 	}
 
+	@Override
+	public double prefWidth(double height) {
+		return 2560;
+	}
+
+	
 	@Override
 	public boolean isResizable() {
 		return true;
