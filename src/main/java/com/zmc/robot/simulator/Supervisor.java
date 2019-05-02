@@ -21,7 +21,6 @@ public class Supervisor {
 	Logger log = Logger.getLogger(TAG);
 
 	private long counter = 0;
-
 	private int mMode = 0; // goto goal 0; avoid obstacle 1;
 
 	GotoGoalWithV m_GoToGoal = new GotoGoalWithV(); // GotoGoal();
@@ -37,11 +36,9 @@ public class Supervisor {
 	// ZMCRobot robot; // = new ZMCRobot();
 
 	AbstractRobot robot;
-
 	Controller m_currentController;
 
 	double d_fw;// =0.25; //distance to follow wall
-
 	double d_stop = 0.02;
 	double d_at_obs;// = 0.18;
 	double d_unsafe;// = 0.05;
@@ -131,10 +128,12 @@ public class Supervisor {
 
 	public void execute(long left_ticks, long right_ticks, double dt) {
 		// m_currentController = null;
-		counter++;
-		if (mSimulateMode)
-			robot.updateState((long) m_left_ticks, (long) m_right_ticks, dt);
-		else
+		// counter++;
+		// if (mSimulateMode)
+		// robot.updateState((long) m_left_ticks, (long) m_right_ticks, dt);
+		// else
+
+		if (!mSimulateMode)
 			robot.updateState(left_ticks, right_ticks, dt);
 
 		check_states();
@@ -157,8 +156,8 @@ public class Supervisor {
 
 		double v = output.v;
 		// Math.min(v1, v2);
-		if (v != 0 && v < robot.min_v)
-			v = 1.01 * robot.min_v;
+		// if (v != 0 && v < robot.min_v)
+		// v = 1.01 * robot.min_v;
 
 		double w = output.w; // Math.max( Math.min(output.w, robot.max_w), -robot.max_w);
 
@@ -168,13 +167,7 @@ public class Supervisor {
 		double pwm_l = robot.vel_l_to_pwm(vel.vel_l);
 		double pwm_r = robot.vel_r_to_pwm(vel.vel_r);
 
-		if (mSimulateMode) {
-			m_left_ticks = m_left_ticks + robot.pwm_to_ticks_l(pwm_l, dt);
-			m_right_ticks = m_right_ticks + robot.pwm_to_ticks_r(pwm_r, dt);
-
-		} else {
-			MoveMotor((int) pwm_l, (int) pwm_r);
-		}
+		robot.moveMotor((int) pwm_l, (int) pwm_r, dt);
 
 	}
 

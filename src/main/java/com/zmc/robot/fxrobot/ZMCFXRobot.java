@@ -5,6 +5,7 @@ import com.zmc.robot.fxrobotui.LocalSimulatorPane;
 import com.zmc.robot.fxrobotui.RemoteSimulatorPane;
 import com.zmc.robot.fxrobotui.SettingsPane;
 import com.zmc.robot.utils.TextAreaAppender;
+import com.zmc.robot.fxrobotui.DrivePane;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -32,6 +33,7 @@ public class ZMCFXRobot extends Application {
     private RemoteSimulatorPane remoteSimulatorPane;
 
     private BalanceRobotPane balancePane;
+    private DrivePane drivePane;
 
     // private RobotCanvasView robotView;
 
@@ -43,6 +45,7 @@ public class ZMCFXRobot extends Application {
         localSimulatorPane = new LocalSimulatorPane();
         remoteSimulatorPane = new RemoteSimulatorPane();
         balancePane = new BalanceRobotPane();
+        drivePane = new DrivePane();
 
         Tab tabSimulator = new Tab();
         tabSimulator.setText("Simulator");
@@ -60,13 +63,17 @@ public class ZMCFXRobot extends Application {
         tabBalance.setText("Balance");
         tabBalance.setContent(balancePane.getMainPane());
 
+        Tab tabDriver = new Tab();
+        tabDriver.setText("Drive");
+        tabDriver.setContent(drivePane.getMainPane());
+
         // settingsPane = new SettingsPane();
 
         // Tab tabSettings = new Tab();
         // tabSettings.setText("Settings");
         // tabSettings.setContent(settingsPane.getMainPane());
 
-        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance);// , tabSettings);
+        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance, tabDriver);// , tabSettings);
 
         SplitPane splitPane = new SplitPane();
 
@@ -80,6 +87,7 @@ public class ZMCFXRobot extends Application {
         // VBox vbox = new VBox(menuBar, splitPane);
 
         Scene scene = new Scene(splitPane, 1024, 600); // Manage scene size
+
         primaryStage.setTitle("ZMC FX Robot");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -94,6 +102,7 @@ public class ZMCFXRobot extends Application {
         localSimulatorPane.stop();
         remoteSimulatorPane.stop();
         balancePane.stop();
+        drivePane.stop();
 
     }
 

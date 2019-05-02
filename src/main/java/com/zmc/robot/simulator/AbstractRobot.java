@@ -26,10 +26,25 @@ public abstract class AbstractRobot {
 
 	int ticks_per_rev_l, ticks_per_rev_r; // ÿȦ��������
 	double m_per_tick_l, m_per_tick_r; // ÿ������ת���ľ���
-	long prev_left_ticks, prev_right_ticks;
+	long prev_left_ticks = 0, prev_right_ticks = 0;
 
 	IRSensor irSensors[] = new IRSensor[5];
 	double irDistances[] = new double[5];
+
+	private boolean mSimulateMode = true;
+	double m_left_ticks = 0, m_right_ticks = 0;
+
+	public void moveMotor(int pwm_l, int pwm_r, double dt) {
+		if (mSimulateMode) {
+			m_left_ticks = m_left_ticks + pwm_to_ticks_l(pwm_l, dt);
+			m_right_ticks = m_right_ticks + pwm_to_ticks_r(pwm_r, dt);
+			updateState((long) m_left_ticks, (long) m_right_ticks, dt);
+		}
+	}
+
+	public void setSimulateMode(boolean val) {
+		mSimulateMode = val;
+	}
 
 	// ObstacleCrossPoint ocps[] = new ObstacleCrossPoint[5];
 	// private ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();

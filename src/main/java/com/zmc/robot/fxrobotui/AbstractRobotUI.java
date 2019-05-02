@@ -286,6 +286,10 @@ public abstract class AbstractRobotUI {
 			// irDistances[i] = IRSensor.minDistance;
 			// Log.i(TAG, "Distance:[" +irDistances[i] + "] ");
 		}
+
+		////////////////// test only 3 irsensor
+		irDistances[0] = 0.4;
+		irDistances[4] = 0.4;
 	}
 
 	public void setScale(double scale) {

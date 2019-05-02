@@ -21,7 +21,7 @@ public class CurveView extends Canvas {
 
 	private double lastPoints[] = new double[100];
 
-	private float maxValue = 10; // 0;
+	private double maxValue = 10, roundMax = 5; // 0;
 
 	private DecimalFormat fmt = new DecimalFormat("#0.00");
 
@@ -52,6 +52,17 @@ public class CurveView extends Canvas {
 
 		for (int i = 0; i < count; i++) {
 
+			double curV = Math.abs(data[i]);
+			if (curV > 1.2 * maxValue) {
+				maxValue = 1.1 * curV;
+			}
+
+			if (curV > roundMax)
+				roundMax = 1.1 * curV;
+
+			if (dataCount > maxData / 2 && roundMax < maxValue)
+				maxValue = roundMax;
+
 			xs = xStep * dataCount;
 			ys = lastPoints[i];
 			xe = xs + xStep;
@@ -63,6 +74,7 @@ public class CurveView extends Canvas {
 		}
 		dataCount++;
 		if (dataCount >= maxData) {
+			roundMax = 5.0f;
 			dataCount = 0;
 			invalidate();
 		}
@@ -154,11 +166,18 @@ public class CurveView extends Canvas {
 		gc.strokeLine(0, height - 2, width, height - 2);
 		// canvas.drawLine(0, height/2, width, height/2, paint);
 
+		gc.setLineWidth(4);
+		double x0 = 5;
+		for (int i = 0; i < colors.length; i++) {
+			gc.setStroke(colors[i]);
+			gc.strokeLine(x0, height - 10, x0 + 20, height - 10);
+			x0 = x0 + 30;
+		}
 	}
 
 	@Override
 	public double minHeight(double height) {
-		return 800;
+		return 600;
 	}
 
 	@Override
@@ -173,12 +192,17 @@ public class CurveView extends Canvas {
 
 	@Override
 	public double minWidth(double height) {
-		return 1024;
+		return 800;
 	}
 
 	@Override
 	public double maxWidth(double height) {
 		return 10000;
+	}
+
+	@Override
+	public double prefWidth(double height) {
+		return minWidth(height);
 	}
 
 	@Override

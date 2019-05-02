@@ -67,6 +67,8 @@ public class BalanceRobotPane {
     private TextField tkpField;
     private GridPane grid;
 
+    private TextField kgField, pwm0Field;
+
     private boolean isGoing = false;
     private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
 
@@ -134,6 +136,10 @@ public class BalanceRobotPane {
          */
         ScrollPane s1 = new ScrollPane();
         s1.setContent(curveView);
+
+        s1.setFitToHeight(true);
+        s1.setFitToWidth(true);
+
         border.setCenter(s1);
         ScrollPane s2 = new ScrollPane();
         s2.setContent(createLeftPane());
@@ -274,6 +280,8 @@ public class BalanceRobotPane {
         grid.add(ssButton, 1, rowIdx);
 
         tkpField = new TextField();
+        kgField = new TextField();
+        pwm0Field = new TextField();
 
         rowIdx += 2;
         label = new Label("PID for Turning     ");
@@ -283,6 +291,17 @@ public class BalanceRobotPane {
         label = new Label("KP:");
         grid.add(label, 0, rowIdx);
         grid.add(tkpField, 1, rowIdx);
+
+        rowIdx++;
+
+        label = new Label("KG:");
+        grid.add(label, 0, rowIdx);
+        grid.add(kgField, 1, rowIdx);
+
+        rowIdx++;
+        label = new Label("PWM0:");
+        grid.add(label, 0, rowIdx);
+        grid.add(pwm0Field, 1, rowIdx);
 
         rowIdx++;
 
@@ -378,7 +397,7 @@ public class BalanceRobotPane {
     }
 
     private void setTurnPID() {
-        String cmdStr = "PID4" + tkpField.getText() + ",0,0;"; // + skiField.getText() + ",0;";
+        String cmdStr = "PID4" + tkpField.getText() + "," + kgField.getText() + "," + pwm0Field.getText() + ";";
         sendCmd(cmdStr);
         log.info(cmdStr);
     }
@@ -432,6 +451,8 @@ public class BalanceRobotPane {
 
         } else if (type == 4) {
             tkpField.setText(kpStr);
+            kgField.setText(kiStr);
+            pwm0Field.setText(kdStr);
 
         }
 
@@ -444,7 +465,7 @@ public class BalanceRobotPane {
             return retStr;
         } else {
             String retStr = "0.";
-            for (int i = 0; i < valStr.length() - len; i++)
+            for (int i = 0; i < (len - valStr.length()); i++)
                 retStr = retStr + "0";
             return retStr + valStr;
         }
@@ -536,7 +557,7 @@ public class BalanceRobotPane {
 
     private void stopRobot() {
         startStopButton.setText("Go");
-        sendCmd("st;");
+        sendCmd("bs;");
         isGoing = false;
     }
 
@@ -683,7 +704,7 @@ public class BalanceRobotPane {
                 else
                     tmp = strValue.substring(idx1, idx2);
                 intVal = Integer.valueOf(tmp);
-                angleValue[count++] = (double) intVal / 10000;
+                angleValue[count++] = (double) intVal / 100;
                 if (idx2 == -1)
                     break;
                 idx1 = idx2 + 1;

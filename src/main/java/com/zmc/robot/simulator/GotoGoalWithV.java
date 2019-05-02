@@ -1,8 +1,15 @@
 package com.zmc.robot.simulator;
 
+import org.apache.log4j.Logger;
+
 public class GotoGoalWithV extends Controller {
 
 	// private static final String TAG = "GTG";
+
+	private final static String TAG = "GTG";
+
+	Logger log = Logger.getLogger(TAG);
+
 	private double m_xg, m_yg;
 
 	private int state = 0; // normal state
@@ -14,7 +21,27 @@ public class GotoGoalWithV extends Controller {
 	private double lastVE = 0;
 	private double lastVEI = 0;
 
+	private double pkp, pki, pkd;
+	private double tkp, tki, tkd;
+
 	public GotoGoalWithV() {
+
+	}
+
+	@Override
+	public void updateSettings(Settings settings) {
+		Kp = settings.kp;
+		Ki = settings.ki;
+		Kd = settings.kd;
+
+		pkp = settings.pkp;
+		pki = settings.pki;
+		pkd = settings.pkd;
+
+		tkp = settings.tkp;
+		tki = settings.tki;
+		tkd = settings.tkd;
+		// Log.i("CTRL", "Update settings: kp=" + Kp + ", ki=" + Ki + ",kd=" + Kd);
 
 	}
 
@@ -34,13 +61,21 @@ public class GotoGoalWithV extends Controller {
 
 		double ve, vei, ved;
 
-		if (d < 0.5) {
+		if (d < 0.3 && d > 0.02) {
 			ve = d;
 			vei = lastVEI + ve * dt;
 			ved = (ve - lastVE) / dt;
-			output.v = Kp * ve / 20 + Kd * ved; // �����г���
+			output.v = pkp * ve + pki * vei + pkd * ved; //
+			if (output.v > 0.3)
+				output.v = 0.3; ///////
+
+			log.info(String.format("D: %.3f, %.3f", d, output.v));
+
 			lastVEI = vei;
 			lastVE = ve;
+		} else {
+			lastVEI = 0;
+			lastVE = 0;
 		}
 
 		if (d < 0.02) // at goal
@@ -64,7 +99,13 @@ public class GotoGoalWithV extends Controller {
 		e = Math.atan2(Math.sin(e), Math.cos(e));
 		e_I = lastErrorIntegration + e * dt;
 		e_D = (e - lastError) / dt;
-		w = Kp * e + Ki * e_I + Kd * e_D;
+
+		if (output.v == 0) {
+			w = tkp * e + tki * e_I + tkd * e_D;
+			log.info(String.format("T: %.3f, %.3f", e, w));
+		} else {
+			w = Kp * e + Ki * e_I + Kd * e_D;
+		}
 		lastErrorIntegration = e_I;
 		lastError = e;
 		output.w = w;

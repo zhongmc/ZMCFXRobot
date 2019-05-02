@@ -11,29 +11,37 @@ public class RearDriveRobot extends AbstractRobot {
 		prev_left_ticks = 0;
 		prev_right_ticks = 0;
 
-		settings.kp = 6; // 25;// 5;
-		settings.ki = 0.01; //// 0.8; // 0.1; //0.01;
-		settings.kd = 0.05; // 0.1;
+		settings.kp = 20; // 25;// 5;
+		settings.ki = 1.0; //// 0.8; // 0.1; //0.01;
+		settings.kd = 0.1; // 0.1;
+
+		settings.pkp = 10;
+		settings.pki = 1;
+		settings.pkd = 0.1;
+
+		settings.tkp = 20;
+		settings.tki = 5;
+		settings.tkd = 0.1;
 
 		settings.atObstacle = 0.3; // 0.15; //0.12;// 0.25; 0.2
 		settings.unsafe = 0.1; // 0.05; // 0.05
 		settings.dfw = 0.25; // 0.20;// 0.30; //0.25
 
 		settings.velocity = 0.5; // 0.50;
-		settings.max_rpm = 150; // 240;
-		settings.min_rpm = 80; // 90; // 110; // 0
+		settings.max_rpm = 200; // 240;
+		settings.min_rpm = 30; // 90; // 110; // 0
 		settings.angleOff = 0;
 		settings.pwm_diff = 0;
 
-		wheel_radius = 0.065 / 2;
+		wheel_radius = 0.033;
 
-		wheel_base_length = 0.150;
+		wheel_base_length = 0.155;
 
 		settings.wheelRadius = wheel_radius;
 		settings.wheelDistance = wheel_base_length;
 
-		ticks_per_rev_l = 330;
-		ticks_per_rev_r = 360;
+		ticks_per_rev_l = 390;
+		ticks_per_rev_r = 390;
 
 		m_per_tick_l = (2 * Math.PI * wheel_radius) / ticks_per_rev_l;
 		m_per_tick_r = (2 * Math.PI * wheel_radius) / ticks_per_rev_r;
@@ -71,7 +79,7 @@ public class RearDriveRobot extends AbstractRobot {
 		if (nvel > max_vel)
 			nvel = max_vel;
 
-		double retVal = 6.257 * nvel + 46.868;
+		double retVal = 10 * nvel; // 6.257 * nvel + 46.868;
 		// double retVal = 0.5729 * nvel * nvel - 5.1735 * nvel + 86.516;
 
 		if (vel >= 0)
@@ -91,7 +99,7 @@ public class RearDriveRobot extends AbstractRobot {
 		if (nvel > max_vel)
 			nvel = max_vel;
 
-		double retVal = 6.257 * nvel + 46.868;
+		double retVal = 10 * nvel; // 6.257 * nvel + 46.868;
 
 		// double retVal = 0.5649 * nvel * nvel - 4.3156 * nvel + 80.706;
 		// 0.4747*nvel*nvel - 3.956*nvel + 80.706;
@@ -110,10 +118,11 @@ public class RearDriveRobot extends AbstractRobot {
 		if (npwm > 220)
 			npwm = 220;
 
-		double ticks = dt * (-0.024 * npwm * npwm + 12.097 * npwm - 426.23);// dt*(0.4975*npwm
+		double ticks = dt * (-0.0264 * npwm * npwm + 16.836 * npwm - 882.53);// dt*(0.4975*npwm
 
 		// y = -0.024x2 + 12.097x - 426.23
 		// y = -0.0218x2 + 11.634x - 358.83
+		// y = -0.0264x2 + 16.836x - 882.53
 
 		if (pwm > 0)
 			return ticks;
@@ -131,10 +140,11 @@ public class RearDriveRobot extends AbstractRobot {
 		if (npwm > 220)
 			npwm = 220;
 
-		double ticks = dt * (-0.0218 * npwm * npwm + 11.634 * npwm - 358.83);
+		double ticks = dt * (-0.0312 * npwm * npwm + 18.344 * npwm - 974.3);
 
 		// y = -0.024x2 + 12.097x - 426.23
 		// y = -0.0218x2 + 11.634x - 358.83
+		// y = -0.0312x2 + 18.344x - 974.3
 
 		if (pwm > 0)
 			return ticks;
@@ -147,77 +157,53 @@ public class RearDriveRobot extends AbstractRobot {
 	// }
 
 	public Vel ensure_w(double v, double w) {
-		Vel vel;
-
-		if (Math.abs(v) > 0) {
-			vel = new Vel();
-			double v_lim, w_lim;
-			v_lim = Math.abs(v);
-			if (v_lim > this.max_v)
-				v_lim = max_v;
-			w_lim = Math.abs(w);
-			if (w_lim > max_w)
-				w_lim = max_w;
-
-			w_lim = Math.signum(w) * w_lim;
-
-			Vel vel_d = uni_to_diff(v_lim, w_lim);
-
-			double vel_rl_max, vel_rl_min;
-			if (vel_d.vel_l > vel_d.vel_r) {
-				vel_rl_min = vel_d.vel_r;
-				vel_rl_max = vel_d.vel_l;
-			} else {
-				vel_rl_min = vel_d.vel_l;
-				vel_rl_max = vel_d.vel_r;
-
-			}
-
-			if (vel_rl_max > this.max_vel) {
-				vel.vel_r = vel_d.vel_r - (vel_rl_max - max_vel);
-				vel.vel_l = vel_d.vel_l - (vel_rl_max - max_vel);
-
-				if ((vel_rl_min - (vel_rl_max - max_vel)) < min_vel) // ����䣿
-				{
-					if (vel.vel_l < vel.vel_r) {
-						vel.vel_l = 0;
-						vel.vel_r = (max_vel + min_vel) / 2;
-					} else {
-						vel.vel_r = 0;
-						vel.vel_l = (max_vel + min_vel) / 2;
-
-					}
-				}
-
-			} else if (vel_rl_min < min_vel) // ����ͣһ���ֵĹ���
-			{
-				vel.vel_r = vel_d.vel_r + (min_vel - vel_rl_min);
-				vel.vel_l = vel_d.vel_l + (min_vel - vel_rl_min);
-			} else {
-				vel.vel_r = vel_d.vel_r;
-				vel.vel_l = vel_d.vel_l;
-			}
-
-			if (vel.vel_l > max_vel)
-				vel.vel_l = max_vel;
-			if (vel.vel_r > max_vel)
-				vel.vel_r = max_vel;
-
-		} else {
-			vel = uni_to_diff(0, w);
-			if (Math.abs(vel.vel_l) < this.min_vel) {
-				vel.vel_l = Math.signum(vel.vel_l) * min_vel;
-				vel.vel_r = Math.signum(vel.vel_r) * min_vel;
-
-			} else if (Math.abs(vel.vel_l) > (min_vel + max_vel) / 2) {
-				vel.vel_l = Math.signum(vel.vel_l) * (min_vel + max_vel) / 2;
-				vel.vel_r = Math.signum(vel.vel_r) * (min_vel + max_vel) / 2;
-
-			}
-
-		}
-
+		Vel vel = uni_to_diff(v, w);
 		return vel;
+		/*
+		 * if (Math.abs(v) > 0) { vel = new Vel(); double v_lim, w_lim; v_lim =
+		 * Math.abs(v); if (v_lim > this.max_v) v_lim = max_v; w_lim = Math.abs(w); if
+		 * (w_lim > max_w) w_lim = max_w;
+		 * 
+		 * w_lim = Math.signum(w) * w_lim;
+		 * 
+		 * Vel vel_d = uni_to_diff(v_lim, w_lim);
+		 * 
+		 * double vel_rl_max, vel_rl_min; if (vel_d.vel_l > vel_d.vel_r) { vel_rl_min =
+		 * vel_d.vel_r; vel_rl_max = vel_d.vel_l; } else { vel_rl_min = vel_d.vel_l;
+		 * vel_rl_max = vel_d.vel_r;
+		 * 
+		 * }
+		 * 
+		 * if (vel_rl_max > this.max_vel) { vel.vel_r = vel_d.vel_r - (vel_rl_max -
+		 * max_vel); vel.vel_l = vel_d.vel_l - (vel_rl_max - max_vel);
+		 * 
+		 * if ((vel_rl_min - (vel_rl_max - max_vel)) < min_vel) // ����䣿 { if (vel.vel_l
+		 * < vel.vel_r) { vel.vel_l = 0; vel.vel_r = (max_vel + min_vel) / 2; } else {
+		 * vel.vel_r = 0; vel.vel_l = (max_vel + min_vel) / 2;
+		 * 
+		 * } }
+		 * 
+		 * } else if (vel_rl_min < min_vel) // ����ͣһ���ֵĹ��� { vel.vel_r = vel_d.vel_r
+		 * + (min_vel - vel_rl_min); vel.vel_l = vel_d.vel_l + (min_vel - vel_rl_min); }
+		 * else { vel.vel_r = vel_d.vel_r; vel.vel_l = vel_d.vel_l; }
+		 * 
+		 * if (vel.vel_l > max_vel) vel.vel_l = max_vel; if (vel.vel_r > max_vel)
+		 * vel.vel_r = max_vel;
+		 * 
+		 * } else { vel = uni_to_diff(0, w); if (Math.abs(vel.vel_l) < this.min_vel) {
+		 * vel.vel_l = Math.signum(vel.vel_l) * min_vel; vel.vel_r =
+		 * Math.signum(vel.vel_r) * min_vel;
+		 * 
+		 * } else if (Math.abs(vel.vel_l) > (min_vel + max_vel) / 2) { vel.vel_l =
+		 * Math.signum(vel.vel_l) * (min_vel + max_vel) / 2; vel.vel_r =
+		 * Math.signum(vel.vel_r) * (min_vel + max_vel) / 2;
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * return vel;
+		 */
 	}
 
 }

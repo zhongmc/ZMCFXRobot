@@ -14,6 +14,8 @@ public class Settings {
 
 	public double kp, ki, kd;
 
+	public double pkp, tkp, pki, tki, pkd, tkd;
+
 	public double atObstacle, unsafe;
 	public double dfw;
 	public double velocity;
@@ -289,6 +291,14 @@ public class Settings {
 
 			wheelRadius = s.wheelRadius;
 			wheelDistance = s.wheelDistance;
+
+			pkp = s.pkp;
+			pki = s.pki;
+			pkd = s.pkd;
+
+			tkp = s.tkp;
+			tki = s.tki;
+			tkd = s.tkd;
 
 		}
 	}
