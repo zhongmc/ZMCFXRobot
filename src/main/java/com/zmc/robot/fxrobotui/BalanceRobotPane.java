@@ -35,6 +35,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
 
 public class BalanceRobotPane {
 
@@ -56,6 +57,8 @@ public class BalanceRobotPane {
 
     private ChoiceBox<String> commChoiceBox;
     private ChoiceBox<String> baundRateChouceBox;
+
+    private CheckBox speedCheckBox, turnCheckBox;
 
     private TextField cmdField;
 
@@ -266,6 +269,16 @@ public class BalanceRobotPane {
         // grid.add(skdField, 1, rowIdx);
         // rowIdx++;
 
+        speedCheckBox = new CheckBox("Add speed route");
+
+        speedCheckBox.selectedProperty()
+                .addListener((ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) -> {
+                    setSpeedRoute(new_val);
+                });
+
+        grid.add(speedCheckBox, 0, rowIdx, 2, 1);
+        rowIdx++;
+
         Button srButton = new Button("Read");
         Button ssButton = new Button("Set");
 
@@ -390,6 +403,27 @@ public class BalanceRobotPane {
         this.enableButtons();
 
         return vbButtons;
+    }
+
+    private void setSpeedRoute(boolean new_val) {
+        String cmd;
+        if (new_val)
+            cmd = "cl01;";
+        else
+            cmd = "cl00;";
+
+        log.info("Send cmd:" + cmd);
+        this.sendCmd(cmd);
+    }
+
+    private void setTurnRoute(boolean new_val) {
+        String cmd;
+        if (new_val)
+            cmd = "cl11;";
+        else
+            cmd = "cl10;";
+
+        this.sendCmd(cmd);
     }
 
     private void readTurnPID() {
