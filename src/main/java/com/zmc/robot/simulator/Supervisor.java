@@ -113,6 +113,28 @@ public class Supervisor {
 
 	}
 
+	public void setGoal(double x, double y, double theta, double v) {
+		m_Goal.x = x;
+		m_Goal.y = y;
+
+		m_input.x_g = x;
+		m_input.y_g = y;
+		m_input.theta = theta;
+		m_input.v = v;
+
+		at_goal = false;
+
+		if (this.mMode == 0) // gtg mode
+		{
+			m_state = S_GTG;
+			m_currentController = m_GoToGoal;
+			m_GoToGoal.reset();
+			d_prog = 100;
+			counter = 0;
+		}
+
+	}
+
 	public RobotState getRobotState() {
 		return robot.getState();
 	}
@@ -490,7 +512,7 @@ public class Supervisor {
 			progress_made = false;
 
 		at_goal = false;
-		if (d < d_stop) {
+		if (d < d_stop + 0.005) {
 			if (Math.abs(robot.theta - this.m_input.theta) < 0.05) // 0.05
 			{
 				at_goal = true;

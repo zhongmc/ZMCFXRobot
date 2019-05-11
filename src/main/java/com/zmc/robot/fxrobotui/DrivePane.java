@@ -29,6 +29,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import org.apache.log4j.Logger;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.CheckBox;
@@ -53,6 +54,8 @@ public class DrivePane implements Runnable {
     private TextField velocityField, angleField;
     private CheckBox traceRouteCheckBox;
     private Button setRouteButton;
+
+    private Button clearButton;
 
     private Supervisor supervisor = new Supervisor();
     private RearDriveRobot robot = new RearDriveRobot();
@@ -155,7 +158,8 @@ public class DrivePane implements Runnable {
                         robotView.setTarget(x, y);
 
                         Point2D p = robotView.getTarget();
-                        double angle = 0;
+                        double angle = 0, v = 0.4;
+
                         String angleStr = angleField.getText();
                         if (angleStr != null && !angleStr.isEmpty()) {
                             try {
@@ -174,8 +178,13 @@ public class DrivePane implements Runnable {
                             }
                         }
 
+                        String vStr = velocityField.getText();
+                        if (vStr != null && !vStr.isEmpty()) {
+                            v = Double.valueOf(vStr);
+                        }
+
                         log.info("Set target to:" + p.x + "," + p.y + ": " + angle);
-                        supervisor.setGoal(p.x, p.y, angle);
+                        supervisor.setGoal(p.x, p.y, angle, v);
 
                         latestClickRunner = null;
                     });
@@ -306,6 +315,11 @@ public class DrivePane implements Runnable {
 
         });
 
+        clearButton = new Button("Clear");
+        clearButton.setOnAction((ActionEvent) -> {
+            clear();
+        });
+
         Slider slider = new Slider();
         slider.setMin(50);
         slider.setMax(200);
@@ -348,8 +362,13 @@ public class DrivePane implements Runnable {
             }
         });
 
-        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, setRouteButton, traceRouteCheckBox, slider,
-                scalingValue, optionButton);
+        HBox hb = new HBox();
+        hb.setSpacing(10);
+        hb.getChildren().addAll(setRouteButton, traceRouteCheckBox);
+        // vbButtons.setPadding(new Insets(0, 20, 10, 20));
+
+        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, hb, clearButton, slider, scalingValue,
+                optionButton);
 
         GridPane grid1 = new GridPane();
         grid1.setAlignment(Pos.CENTER); // Override default
@@ -459,6 +478,10 @@ public class DrivePane implements Runnable {
     private void zoomRobotView(double scale) {
         robotView.setScale(scale);
         scenseView.setScale(scale);
+    }
+
+    private void clear() {
+        scenseView.invalidate();
     }
 
     private static final int SINGLE_CLICK_DELAY = 350;
