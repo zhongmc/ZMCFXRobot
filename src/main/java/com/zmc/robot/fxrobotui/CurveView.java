@@ -7,6 +7,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+
 import com.sun.javafx.geom.Point2D;
 
 import java.text.DecimalFormat;
@@ -127,20 +130,25 @@ public class CurveView extends Canvas {
 		// canvas.drawText(label, 5, 35, paint);
 		// canvas.drawText(label, 5, height - 5, paint);
 
+		Font f = Font.font(null, FontWeight.THIN, 12);
+		gc.setFont(f);
+		gc.setStroke(Color.DARKGRAY);
+		gc.setFill(Color.DARKGRAY);
+
 		curPos = 0;
 		step = 20;
 		idx = 0;
 		while (true) {
 			if (idx % 5 == 0) {
 
-				gc.setStroke(Color.DARKGRAY);
+				// gc.setStroke(Color.DARKGRAY);
 				label = fmt.format(labelValue);
 				if (idx == 0) {
 					// canvas.drawText(label, 5, (float) (height / 2 + curPos - 5), paint);
-					gc.strokeText(label, 5, height / 2 + curPos - 5);
+					gc.fillText(label, 5, height / 2 + curPos - 5);
 				} else {
-					gc.strokeText("-" + label, 5, (float) (height / 2 + curPos - 5));
-					gc.strokeText(label, 5, (float) (height / 2 - curPos - 5));
+					gc.fillText("-" + label, 5, (float) (height / 2 + curPos - 5));
+					gc.fillText(label, 5, (float) (height / 2 - curPos - 5));
 
 					// canvas.drawText("-" + label, 5, (float) (height / 2 + curPos - 5), paint);
 					// canvas.drawText(label, 5, (float) (height / 2 - curPos - 5), paint);

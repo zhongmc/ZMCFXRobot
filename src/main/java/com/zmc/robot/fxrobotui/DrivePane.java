@@ -183,7 +183,7 @@ public class DrivePane implements Runnable {
                             v = Double.valueOf(vStr);
                         }
 
-                        log.info("Set target to:" + p.x + "," + p.y + ": " + angle);
+                        log.info("Set target to (x,y; v, angle):" + p.x + "," + p.y + ": " + v + "," + angle);
                         supervisor.setGoal(p.x, p.y, angle, v);
 
                         latestClickRunner = null;

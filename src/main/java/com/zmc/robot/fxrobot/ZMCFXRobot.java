@@ -29,7 +29,7 @@ public class ZMCFXRobot extends Application {
     private final TextArea loggingView = new TextArea();
     // private SettingsPane settingsPane;
 
-    private LocalSimulatorPane localSimulatorPane;
+    // private LocalSimulatorPane localSimulatorPane;
     private RemoteSimulatorPane remoteSimulatorPane;
 
     private BalanceRobotPane balancePane;
@@ -42,18 +42,14 @@ public class ZMCFXRobot extends Application {
 
         TabPane tabs = new TabPane();
 
-        localSimulatorPane = new LocalSimulatorPane();
+        // localSimulatorPane = new LocalSimulatorPane();
         remoteSimulatorPane = new RemoteSimulatorPane();
         balancePane = new BalanceRobotPane();
         drivePane = new DrivePane();
 
-        Tab tabSimulator = new Tab();
-        tabSimulator.setText("Simulator");
-        tabSimulator.setContent(localSimulatorPane.getMainPane());
-
-        // Tab tabRemoteSimulator = new Tab();
-        // tabRemoteSimulator.setText("Remote Simulator");
-        // tabRemoteSimulator.setContent(remoteSimulatorPane.getMainPane());
+        // Tab tabSimulator = new Tab();
+        // tabSimulator.setText("Simulator");
+        // tabSimulator.setContent(localSimulatorPane.getMainPane());
 
         Tab tabRemoteSimulator = new Tab();
         tabRemoteSimulator.setText("Remote Simulator");
@@ -73,7 +69,7 @@ public class ZMCFXRobot extends Application {
         // tabSettings.setText("Settings");
         // tabSettings.setContent(settingsPane.getMainPane());
 
-        tabs.getTabs().addAll(tabSimulator, tabRemoteSimulator, tabBalance, tabDriver);// , tabSettings);
+        tabs.getTabs().addAll(tabDriver, tabRemoteSimulator, tabBalance);// , tabSettings);
 
         SplitPane splitPane = new SplitPane();
 
@@ -99,7 +95,7 @@ public class ZMCFXRobot extends Application {
 
         // settingsPane.stop();
 
-        localSimulatorPane.stop();
+        // localSimulatorPane.stop();
         remoteSimulatorPane.stop();
         balancePane.stop();
         drivePane.stop();

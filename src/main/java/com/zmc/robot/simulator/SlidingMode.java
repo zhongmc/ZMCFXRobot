@@ -14,6 +14,8 @@ public class SlidingMode extends Controller {
 	boolean slideLeft = false;
 	boolean slideRight = false;
 
+	double d_fw;
+
 	// static double maxDistance = 0.3;
 
 	static String TAG = "SlidingMode";
@@ -130,8 +132,8 @@ public class SlidingMode extends Controller {
 
 		IRSensor[] irSensors = robot.getIRSensors();
 
-		double d = 0.35;
-		double d_fw = 0.3;
+		double d = d_fw * 1.42;// 0.35;
+		// double d_fw = 0.3;
 
 		int idx = 0;
 
@@ -143,16 +145,16 @@ public class SlidingMode extends Controller {
 		switch (idx) {
 		case 0:
 
-			irSensors[1].getWallVector(p1, robot, d, d_fw);
-			irSensors[2].getWallVector(p0, robot, d, d_fw);
+			irSensors[1].getWallVector(p1, robot, d);
+			irSensors[2].getWallVector(p0, robot, d);
 			break;
 		case 1:
-			irSensors[0].getWallVector(p1, robot, d, d_fw);
-			irSensors[2].getWallVector(p0, robot, d, d_fw);
+			irSensors[0].getWallVector(p1, robot, d);
+			irSensors[2].getWallVector(p0, robot, d);
 			break;
 		case 2:
-			irSensors[0].getWallVector(p1, robot, d, d_fw);
-			irSensors[1].getWallVector(p0, robot, d, d_fw);
+			irSensors[0].getWallVector(p1, robot, d);
+			irSensors[1].getWallVector(p0, robot, d);
 			break;
 		}
 
@@ -170,16 +172,16 @@ public class SlidingMode extends Controller {
 
 		switch (idx) {
 		case 2:
-			irSensors[4].getWallVector(p3, robot, d, d_fw);
-			irSensors[3].getWallVector(p2, robot, d, d_fw);
+			irSensors[4].getWallVector(p3, robot, d);
+			irSensors[3].getWallVector(p2, robot, d);
 			break;
 		case 3:
-			irSensors[4].getWallVector(p3, robot, d, d_fw);
-			irSensors[2].getWallVector(p2, robot, d, d_fw);
+			irSensors[4].getWallVector(p3, robot, d);
+			irSensors[2].getWallVector(p2, robot, d);
 			break;
 		case 4:
-			irSensors[3].getWallVector(p3, robot, d, d_fw);
-			irSensors[2].getWallVector(p2, robot, d, d_fw);
+			irSensors[3].getWallVector(p3, robot, d);
+			irSensors[2].getWallVector(p2, robot, d);
 			break;
 		}
 

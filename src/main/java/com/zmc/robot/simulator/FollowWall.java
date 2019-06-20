@@ -1,6 +1,12 @@
 package com.zmc.robot.simulator;
 
+import org.apache.log4j.Logger;
+
 public class FollowWall extends Controller {
+
+	private final static String TAG = "GTG";
+
+	Logger log = Logger.getLogger(TAG);
 
 	public double d_fw;
 	int dir;
@@ -30,7 +36,7 @@ public class FollowWall extends Controller {
 
 		IRSensor[] irSensors = robot.getIRSensors();
 
-		double d = 0.35;
+		double d = d_fw * 1.42;// 0.32; // 0.35;
 
 		int idx = 0;
 		if (dir == 0) // follow left
@@ -44,8 +50,8 @@ public class FollowWall extends Controller {
 			switch (idx) {
 			case 0:
 
-				irSensors[1].getWallVector(p1, robot, d, d_fw);
-				irSensors[2].getWallVector(p0, robot, d, d_fw);
+				irSensors[1].getWallVector(p1, robot, d);
+				irSensors[2].getWallVector(p0, robot, d);
 
 				// p1.x = irSensors[1].xw;
 				// p1.y = irSensors[1].yw;
@@ -56,8 +62,8 @@ public class FollowWall extends Controller {
 				break;
 			case 1:
 
-				irSensors[0].getWallVector(p1, robot, d, d_fw);
-				irSensors[2].getWallVector(p0, robot, d, d_fw);
+				irSensors[0].getWallVector(p1, robot, d);
+				irSensors[2].getWallVector(p0, robot, d);
 
 				// p1.x = irSensors[0].xw;
 				// p1.y = irSensors[0].yw;
@@ -74,8 +80,8 @@ public class FollowWall extends Controller {
 				break;
 			case 2:
 
-				irSensors[0].getWallVector(p1, robot, d, d_fw);
-				irSensors[1].getWallVector(p0, robot, d, d_fw);
+				irSensors[0].getWallVector(p1, robot, d);
+				irSensors[1].getWallVector(p0, robot, d);
 
 				// p1.x = irSensors[0].xw;
 				// p1.y = irSensors[0].yw;
@@ -106,8 +112,8 @@ public class FollowWall extends Controller {
 			switch (idx) {
 			case 2:
 
-				irSensors[4].getWallVector(p1, robot, d, d_fw);
-				irSensors[3].getWallVector(p0, robot, d, d_fw);
+				irSensors[4].getWallVector(p1, robot, d);
+				irSensors[3].getWallVector(p0, robot, d);
 
 				// p1.x = irSensors[4].xw;
 				// p1.y = irSensors[4].yw;
@@ -115,8 +121,8 @@ public class FollowWall extends Controller {
 				// p0.y = irSensors[3].yw;
 				break;
 			case 3:
-				irSensors[4].getWallVector(p1, robot, d, d_fw);
-				irSensors[2].getWallVector(p0, robot, d, d_fw);
+				irSensors[4].getWallVector(p1, robot, d);
+				irSensors[2].getWallVector(p0, robot, d);
 
 				// p1.x = irSensors[4].xw;
 				// p1.y = irSensors[4].yw;
@@ -127,8 +133,8 @@ public class FollowWall extends Controller {
 				break;
 			case 4:
 
-				irSensors[3].getWallVector(p1, robot, d, d_fw);
-				irSensors[2].getWallVector(p0, robot, d, d_fw);
+				irSensors[3].getWallVector(p1, robot, d);
+				irSensors[2].getWallVector(p0, robot, d);
 				// p1.x = irSensors[3].xw;
 				// p1.y = irSensors[3].yw;
 				// p0.x = irSensors[2].xw;
@@ -185,14 +191,25 @@ public class FollowWall extends Controller {
 
 		e = theta_fw - robot.theta;
 		e = Math.atan2(Math.sin(e), Math.cos(e));
-		e_I = lastErrorIntegration + e * dt;
+
+		double kp = Kp;
+		if (Math.abs(e) > 1) {
+			e_I = 0;
+			// lastErrorIntegration + e * dt;
+			kp = Kp / 2;
+		} else {
+			e_I = lastErrorIntegration + e * dt;
+
+		}
 		e_D = (e - lastError) / dt;
-		w = Kp * e + Ki * e_I + Kd * e_D;
+		w = kp * e + Ki * e_I + Kd * e_D;
 		lastErrorIntegration = e_I;
 		lastError = e;
 
-		output.v = input.v;
+		output.v = input.v; /// (1 + Math.abs(robot.w)); // 2 * Math.abs(e));
 		output.w = w;
+
+		log.info(String.format("FW: %.3f, %.3f, %.3f", output.v, e, w));
 
 		return output;
 	}

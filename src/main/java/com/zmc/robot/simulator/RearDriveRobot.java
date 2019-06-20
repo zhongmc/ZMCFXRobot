@@ -19,15 +19,15 @@ public class RearDriveRobot extends AbstractRobot {
 		settings.pki = 0.5;
 		settings.pkd = 0.1;
 
-		settings.tkp = 5;
-		settings.tki = 10;
+		settings.tkp = 20;
+		settings.tki = 0.7;
 		settings.tkd = 0.1;
 
 		settings.atObstacle = 0.3; // 0.15; //0.12;// 0.25; 0.2
 		settings.unsafe = 0.1; // 0.05; // 0.05
-		settings.dfw = 0.25; // 0.20;// 0.30; //0.25
+		settings.dfw = 0.25; // 0.25; // 0.20;// 0.30; //0.25
 
-		settings.velocity = 0.5; // 0.50;
+		settings.velocity = 0.3; // 0.50;
 		settings.max_rpm = 200; // 240;
 		settings.min_rpm = 30; // 90; // 110; // 0
 		settings.angleOff = 0;
@@ -60,8 +60,6 @@ public class RearDriveRobot extends AbstractRobot {
 		min_w = 0; // (wheel_radius / wheel_base_length) * (min_vel);
 
 		irSensors[0] = new IRSensor(-0.045, 0.05, Math.PI / 2);
-		// irSensors[1] = new IRSensor(0.10, 0.04, Math.PI / 4); // 0.16,0.045, PI/6
-		// 0.075, 0.035
 		irSensors[1] = new IRSensor(0.08, 0.04, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
 		irSensors[2] = new IRSensor(0.162, 0.0, 0);
 		irSensors[3] = new IRSensor(0.08, -0.04, -Math.PI / 4);
@@ -70,16 +68,19 @@ public class RearDriveRobot extends AbstractRobot {
 
 	public double vel_l_to_pwm(double vel) {
 		double nvel = Math.abs(vel);
-		if (nvel < min_vel - 0.1)
-			return 0.0;
 
-		if (nvel < this.min_vel)
-			nvel = min_vel;
+		if (nvel < 1)
+			return 0;
+		// if (nvel < min_vel - 0.1)
+		// return 0.0;
 
-		if (nvel > max_vel)
-			nvel = max_vel;
+		// if (nvel < this.min_vel)
+		// nvel = min_vel;
 
-		double retVal = 10 * nvel; // 6.257 * nvel + 46.868;
+		// if (nvel > max_vel)
+		// nvel = max_vel;
+
+		double retVal = 6.257 * nvel + 46.868;
 		// double retVal = 0.5729 * nvel * nvel - 5.1735 * nvel + 86.516;
 
 		if (vel >= 0)
@@ -89,17 +90,22 @@ public class RearDriveRobot extends AbstractRobot {
 	}
 
 	public double vel_r_to_pwm(double vel) {
+
 		double nvel = Math.abs(vel);
-		if (nvel < (min_vel - 0.1))
-			return 0.0;
 
-		if (nvel < this.min_vel)
-			nvel = min_vel;
+		if (nvel < 1)
+			return 0;
 
-		if (nvel > max_vel)
-			nvel = max_vel;
+		// if (nvel < (min_vel - 0.1))
+		// return 0.0;
 
-		double retVal = 10 * nvel; // 6.257 * nvel + 46.868;
+		// if (nvel < this.min_vel)
+		// nvel = min_vel;
+
+		// if (nvel > max_vel)
+		// nvel = max_vel;
+
+		double retVal = 6.257 * nvel + 46.868; // 10 * nvel; //
 
 		// double retVal = 0.5649 * nvel * nvel - 4.3156 * nvel + 80.706;
 		// 0.4747*nvel*nvel - 3.956*nvel + 80.706;
@@ -112,7 +118,7 @@ public class RearDriveRobot extends AbstractRobot {
 	public double pwm_to_ticks_l(double pwm, double dt) {
 		double npwm = Math.abs(pwm);
 
-		if (npwm < 60)
+		if (npwm < 50)
 			return 0;
 
 		if (npwm > 220)
@@ -134,7 +140,7 @@ public class RearDriveRobot extends AbstractRobot {
 	public double pwm_to_ticks_r(double pwm, double dt) {
 		double npwm = Math.abs(pwm);
 
-		if (npwm < 60)
+		if (npwm < 50)
 			return 0;
 
 		if (npwm > 220)
@@ -156,9 +162,60 @@ public class RearDriveRobot extends AbstractRobot {
 	// obstacles.add(obs);
 	// }
 
+	public PWMOut getPWMOut(double v, double w) {
+		Vel vel = ensure_w(v, w);
+
+		int pwm_l = (int) vel_l_to_pwm(vel.vel_l);
+		int pwm_r = (int) vel_r_to_pwm(vel.vel_r);
+
+		if (v == 0) {
+			if (Math.abs(pwm_l) > 80) {
+				if (pwm_l > 0) {
+					pwm_l = 80;
+					pwm_r = -80;
+				} else {
+					pwm_l = -80;
+					pwm_r = 80;
+
+				}
+			}
+
+		} else {
+			int dif = pwm_l - pwm_r;
+			if (dif > 80) {
+				if (pwm_l > 0) {
+					pwm_l = pwm_r + 80;
+				} else {
+					pwm_r = pwm_l - 80;
+				}
+			} else if (dif < -80) {
+				if (pwm_l >= 0) {
+					pwm_r = pwm_l + 80;
+				} else {
+					pwm_l = pwm_r - 80;
+				}
+			}
+		}
+
+		PWMOut pwmOut = new PWMOut(pwm_l, pwm_r);
+		return pwmOut;
+	}
+
 	public Vel ensure_w(double v, double w) {
 		Vel vel = uni_to_diff(v, w);
+
+		if (v == 0)
+			return vel;
+		if (vel.vel_l * vel.vel_r >= 0)
+			return vel;
+
+		if (Math.abs(vel.vel_l) > Math.abs(vel.vel_r)) {
+			vel.vel_r = 0;
+		} else
+			vel.vel_l = 0;
+
 		return vel;
+
 		/*
 		 * if (Math.abs(v) > 0) { vel = new Vel(); double v_lim, w_lim; v_lim =
 		 * Math.abs(v); if (v_lim > this.max_v) v_lim = max_v; w_lim = Math.abs(w); if

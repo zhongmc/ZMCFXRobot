@@ -37,11 +37,11 @@ public class IRSensor {
 
 	}
 
-	public void getWallVector(Vector p, AbstractRobot robot, double d, double d_fw) {
+	public void getWallVector(Vector p, AbstractRobot robot, double d) {
 		p.x = xw;
 		p.y = yw;
 
-		if (distance > d) {
+		if (distance >= (maxDistance - 0.01)) {
 			double dis = distance;
 			setDistance(d);
 			applyGeometry(robot.x, robot.y, robot.theta);
@@ -53,32 +53,22 @@ public class IRSensor {
 		}
 	}
 
-	public Vector getWallVector(double xc, double yc, double theta, double d_fw) {
-		Vector v = new Vector(xw, yw);
-
-		double dis = distance;
-		if (distance >= maxDistance) {
-			double d;
-			if (theta_s == 0) {
-				d = d_fw;
-			} else {
-				d = Math.abs(d_fw / Math.sin(theta_s));
-			}
-
-			setDistance(d);
-			applyGeometry(xc, yc, theta);
-
-			v.x = xw;
-			v.y = yw;
-
-			// ��ԭ
-			setDistance(dis);
-			applyGeometry(xc, yc, theta);
-		}
-
-		return v;
-	}
-
+	/*
+	 * public Vector getWallVector(double xc, double yc, double theta, double d_fw)
+	 * { Vector v = new Vector(xw, yw);
+	 * 
+	 * double dis = distance; if (distance >= (maxDistance - 0.01)) { double d; if
+	 * (theta_s == 0) { d = d_fw; } else { d = Math.abs(d_fw / Math.sin(theta_s)); }
+	 * 
+	 * setDistance(d); applyGeometry(xc, yc, theta);
+	 * 
+	 * v.x = xw; v.y = yw;
+	 * 
+	 * // ��ԭ setDistance(dis); applyGeometry(xc, yc, theta); }
+	 * 
+	 * return v; }
+	 * 
+	 */
 	public Vector getObstaclePos() {
 		return new Vector(xw, yw);
 	}

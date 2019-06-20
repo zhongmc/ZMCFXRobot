@@ -1,5 +1,7 @@
 package com.zmc.robot.fxrobotui;
 
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,6 +163,18 @@ public abstract class AbstractRobotUI {
 			gc.strokeLine(xs, ys, xe, ye);
 		}
 
+		xs = (float) (width / 2 + mScale * (x + 0.2));
+		ys = (float) (height / 2 - mScale * y);
+
+		Font f = Font.font(null, FontWeight.THIN, 12);
+		gc.setFont(f);
+		gc.setStroke(Color.DARKGRAY);
+		gc.setFill(Color.DARKGRAY);
+		gc.setLineWidth(1);
+		String label = String.format("[%.3f,%.3f:%.1f]", x, y, 180 * theta / Math.PI);
+		gc.fillText(label, xs, ys);
+		gc.setLineWidth(1);
+
 	}
 
 	private void drawMatrixPath(GraphicsContext gc, double[][] mt, int len) {
@@ -288,8 +302,8 @@ public abstract class AbstractRobotUI {
 		}
 
 		////////////////// test only 3 irsensor
-		irDistances[0] = 0.4;
-		irDistances[4] = 0.4;
+		// irDistances[0] = 0.4;
+		// irDistances[4] = 0.4;
 	}
 
 	public void setScale(double scale) {

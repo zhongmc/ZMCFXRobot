@@ -42,8 +42,8 @@ public class DriveController extends Controller {
 
 		if (mW != 0) // 转弯，控制角速度？
 		{
-			output.v = input.v;
-			output.w = mW;
+			output.v = input.v / (1 + Math.abs(robot.w));
+			output.w = 5 * mW;
 
 			// e = mW - robot.w;
 
@@ -81,12 +81,24 @@ public class DriveController extends Controller {
 		e = mTheta - robot.theta;
 		e = Math.atan2(Math.sin(e), Math.cos(e));
 
-		e_I = lastErrorIntegration + e * dt;
+		double p = Kp;
+
+		if (Math.abs(e) > 2)
+			p = p / 3;
+		else if (Math.abs(e) > 1)
+			p = p / 2;
+
+		if (Math.abs(e) > 1) {
+			e_I = 0;
+		} else
+			e_I = lastErrorIntegration + e * dt;
+
+		// e_I = lastErrorIntegration + e * dt;
 		e_D = (e - lastError) / dt;
-		w = Kp * e + Ki * e_I + Kd * e_D;
+		w = p * e + Ki * e_I + Kd * e_D;
 		lastErrorIntegration = e_I;
-		if (Math.abs(lastErrorIntegration) > 10)
-			lastErrorIntegration = 0;
+		// if (Math.abs(lastErrorIntegration) > 10)
+		// lastErrorIntegration = 0;
 
 		output.v = input.v;
 		output.w = w;

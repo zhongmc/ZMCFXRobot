@@ -117,6 +117,45 @@ public class TTRobot extends AbstractRobot {
 
 	}
 
+	public PWMOut getPWMOut(double v, double w) {
+		Vel vel = ensure_w(v, w);
+
+		int pwm_l = (int) vel_l_to_pwm(vel.vel_l);
+		int pwm_r = (int) vel_r_to_pwm(vel.vel_r);
+
+		if (v == 0) {
+			if (Math.abs(pwm_l) > 80) {
+				if (pwm_l > 0) {
+					pwm_l = 80;
+					pwm_r = -80;
+				} else {
+					pwm_l = -80;
+					pwm_r = 80;
+
+				}
+			}
+
+		} else {
+			int dif = pwm_l - pwm_r;
+			if (dif > 80) {
+				if (pwm_l > 0) {
+					pwm_l = pwm_r + 80;
+				} else {
+					pwm_r = pwm_l - 80;
+				}
+			} else if (dif < -80) {
+				if (pwm_l >= 0) {
+					pwm_r = pwm_l + 80;
+				} else {
+					pwm_l = pwm_r - 80;
+				}
+			}
+		}
+
+		PWMOut pwmOut = new PWMOut(pwm_l, pwm_r);
+		return pwmOut;
+	}
+
 	public Vel ensure_w(double v, double w) {
 		if (w > max_w)
 			w = max_w;

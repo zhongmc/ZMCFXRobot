@@ -180,6 +180,8 @@ public abstract class AbstractRobot {
 
 	public abstract Vel ensure_w(double v, double w);
 
+	public abstract PWMOut getPWMOut(double v, double w);
+
 	public abstract double vel_l_to_pwm(double vel);
 
 	public abstract double vel_r_to_pwm(double vel);

@@ -183,13 +183,44 @@ public class Supervisor {
 
 		double w = output.w; // Math.max( Math.min(output.w, robot.max_w), -robot.max_w);
 
-		Vel vel;
-		vel = robot.ensure_w(v, w);
+		PWMOut pwm = robot.getPWMOut(v, w);
+		robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
 
-		double pwm_l = robot.vel_l_to_pwm(vel.vel_l);
-		double pwm_r = robot.vel_r_to_pwm(vel.vel_r);
+		// Vel vel;
+		// vel = robot.ensure_w(v, w);
 
-		robot.moveMotor((int) pwm_l, (int) pwm_r, dt);
+		// int pwm_l = (int) robot.vel_l_to_pwm(vel.vel_l);
+		// int pwm_r = (int) robot.vel_r_to_pwm(vel.vel_r);
+
+		// if (v == 0) {
+		// if (Math.abs(pwm_l) > 80) {
+		// if (pwm_l > 0) {
+		// pwm_l = 80;
+		// pwm_r = -80;
+		// } else {
+		// pwm_l = -80;
+		// pwm_r = 80;
+
+		// }
+		// }
+
+		// } else {
+		// int dif = pwm_l - pwm_r;
+		// if (dif > 80) {
+		// if (pwm_l > 0) {
+		// pwm_l = pwm_r + 80;
+		// } else {
+		// pwm_r = pwm_l - 80;
+		// }
+		// } else if (dif < -80) {
+		// if (pwm_l > 0) {
+		// pwm_r = pwm_l + 80;
+		// } else {
+		// pwm_l = pwm_r - 80;
+		// }
+		// }
+		// }
+		// robot.moveMotor((int) pwm_l, (int) pwm_r, dt);
 
 	}
 
@@ -606,6 +637,7 @@ public class Supervisor {
 
 		m_FollowWall.updateSettings(settings);
 		m_FollowWall.d_fw = settings.dfw;
+		m_SlidingMode.d_fw = settings.dfw;
 
 		m_traceRoute.updateSettings(settings);
 

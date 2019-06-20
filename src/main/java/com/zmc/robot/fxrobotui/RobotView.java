@@ -6,6 +6,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import com.sun.javafx.geom.Point2D;
 import com.zmc.robot.simulator.ControllerInfo;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 public class RobotView extends Canvas {
 
@@ -33,6 +35,8 @@ public class RobotView extends Canvas {
     private double width, height;
     private GraphicsContext gc;
     private RearDriveRobotUI robot;
+
+    private String targetStr = "";
 
     public RobotView(double canvasWidth, double canvasHeight, double scale) {
         this.canvasWidth = canvasWidth;
@@ -93,18 +97,26 @@ public class RobotView extends Canvas {
         gc.setStroke(Color.RED);//  设置红色  
         gc.setLineWidth(1);
 
+        double xs, ys, xe, ye;
+
+        xs = width / 2 + targetX * mScale;
+        ys = height / 2 - targetY * mScale;
+
         // gtg target
-        gc.strokeLine((width / 2 + targetX * mScale - 20), (height / 2 - targetY * mScale),
-                (width / 2 + targetX * mScale + 20), (height / 2 - targetY * mScale));
-        gc.strokeLine((width / 2 + targetX * mScale), (height / 2 - targetY * mScale - 20),
-                (width / 2 + targetX * mScale), (height / 2 - targetY * mScale + 20));
+        gc.strokeLine((xs - 20), ys, (xs + 20), (ys));
+        gc.strokeLine(xs, (ys - 20), xs, (ys + 20));
+
+        Font f = Font.font(null, FontWeight.THIN, 12);
+        gc.setFont(f);
+        gc.setStroke(Color.DARKGRAY);
+        gc.setFill(Color.DARKGRAY);
+        gc.setLineWidth(1);
+        gc.fillText(targetStr, xs + 3, ys - 3);
 
         robot.draw(gc);
 
         if (mCtrlInfo == null)
             return;
-
-        double xs, ys, xe, ye;
 
         double x, y;
         x = robot.x;
@@ -175,6 +187,11 @@ public class RobotView extends Canvas {
     public void setTarget(double x, double y) {
         targetX = (x - width / 2) / mScale;
         targetY = (height / 2 - y) / mScale;
+
+        targetX = Math.round(targetX * 10) / 10.0;
+        targetY = Math.round(targetY * 10) / 10.0;
+
+        targetStr = String.format("%.2f,%.2f", targetX, targetY);
         invalidate();
 
     }

@@ -42,16 +42,35 @@ public class DriveSupervisor {
 		double v = m_output.v;
 		double w = m_output.w;
 
-		Vel mVel = robot.ensure_w(v, w);
+		PWMOut pwm = robot.getPWMOut(v, w);
+		robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
 
-		double pwm_l = (int) robot.vel_l_to_pwm(mVel.vel_l);
-		double pwm_r = (int) robot.vel_r_to_pwm(mVel.vel_r);
+		// Vel mVel = robot.ensure_w(v, w);
+
+		// int pwm_l = (int) robot.vel_l_to_pwm(mVel.vel_l);
+		// int pwm_r = (int) robot.vel_r_to_pwm(mVel.vel_r);
+
+		// int dif = pwm_l - pwm_r;
+
+		// if (dif > 80 && pwm_l * pwm_r > 0) {
+		// if (pwm_l > 0) {
+		// pwm_l = pwm_r + 80;
+		// } else {
+		// pwm_r = pwm_l - 80;
+		// }
+		// } else if (dif < -80) {
+		// if (pwm_l > 0) {
+		// pwm_r = pwm_l + 80;
+		// } else {
+		// pwm_l = pwm_r - 80;
+		// }
+		// }
 
 		// if (mSimulateMode) {
 		// m_left_ticks = m_left_ticks + robot.pwm_to_ticks_l(pwm_l, dt);
 		// m_right_ticks = m_right_ticks + robot.pwm_to_ticks_r(pwm_r, dt);
 		// } else {
-		robot.moveMotor((int) pwm_l, (int) pwm_r, dt);
+
 		// }
 
 	}

@@ -1,7 +1,5 @@
 package com.zmc.robot.simulator;
 
-import javax.lang.model.util.ElementScanner6;
-
 import org.apache.log4j.Logger;
 
 public class GotoGoalWithV extends Controller {
@@ -50,7 +48,7 @@ public class GotoGoalWithV extends Controller {
 	@Override
 	Output execute(AbstractRobot robot, Input input, double dt) {
 
-		double u_x, u_y, e, e_I, e_D, w, theta_g;
+		double u_x, u_y, e, e_I, e_D, w = 0, theta_g;
 
 		u_x = input.x_g - robot.x;
 		u_y = input.y_g - robot.y;
@@ -95,34 +93,45 @@ public class GotoGoalWithV extends Controller {
 		e = theta_g - robot.theta;
 		e = Math.atan2(Math.sin(e), Math.cos(e));
 
-		e_I = lastErrorIntegration + e * dt;
 		e_D = (e - lastError) / dt;
 
-		if (state == 0) {
+		if (state == 0 || state == 1) { // dir
 			double p = Kp;
 
 			if (Math.abs(e) > 2)
 				p = p / 3;
 			else if (Math.abs(e) > 1)
 				p = p / 2;
+
+			if (Math.abs(e) > 1) {
+				e_I = 0;
+			} else
+				e_I = lastErrorIntegration + e * dt;
+
 			w = p * e + Ki * e_I + Kd * e_D;
 			lastErrorIntegration = e_I;
 			lastError = e;
-			output.v = input.v;
+			output.v = input.v / (1 + Math.abs(robot.w)); // Math.abs(e));
 			output.w = w;
 
-		} else if (state == 1) {
+			if (state == 0) // && Math.abs(e) > 0.5) {
+				log.info(String.format("V: %.3f, %.3f, %.3f", e, w, output.v));
+
+		}
+		// } else
+
+		if (state == 1) { // distance
 			ve = d;
 			vei = lastVEI + ve * dt;
 			ved = (ve - lastVE) / dt;
 			output.v = pkp * ve + pki * vei + pkd * ved; //
 			if (output.v > 0.3)
 				output.v = 0.3; ///////
-			output.w = 0;
-			log.info(String.format("D: %.3f, %.3f", d, output.v));
+			// output.w = 0;
+			log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
 			lastVEI = vei;
 			lastVE = ve;
-		} else if (state == 2) {
+		} else if (state == 2) { // theta
 			double p = tkp;
 
 			if (Math.abs(e) > 2)
@@ -130,8 +139,14 @@ public class GotoGoalWithV extends Controller {
 			else if (Math.abs(e) > 1)
 				p = p / 2;
 
+			if (Math.abs(e) > 1) {
+				e_I = 0;
+			} else
+				e_I = lastErrorIntegration + e * dt;
+
 			w = p * e + tki * e_I + tkd * e_D;
-			log.info(String.format("T: %.3f, %.3f, %.3f", d, e, w));
+			log.info(String.format("T: %.3f, %.3f, %.3f, %.3f, %.1f, %.1f", d, e, w, robot.theta, robot.m_left_ticks,
+					robot.m_right_ticks));
 
 			lastErrorIntegration = e_I;
 			lastError = e;
