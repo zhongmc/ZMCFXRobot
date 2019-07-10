@@ -67,12 +67,15 @@ public class GotoGoalWithV extends Controller {
 				state = 0;
 				lastError = 0;
 				lastErrorIntegration = 0;
+				log.info("Change to normal ctrl...");
 			}
 		} else if (d < 0.3 && d > 0.02) {
-			if (state == 2 && d > 0.03)
+			if (state == 2 && d > 0.03) {
 				state = 1; // change to d cntrol
-			else if (state == 0) // if d small enougth, stay theta control
+				log.info("Change to distance ctrl...");
+			} else if (state == 0) // if d small enougth, stay theta control
 			{
+				log.info("Change to distance ctrl...");
 				state = 1;
 				lastVEI = 0;
 				lastVE = 0;
@@ -81,6 +84,7 @@ public class GotoGoalWithV extends Controller {
 
 		if (d <= 0.02) {
 			if (state != 2) {
+				log.info("Change to theta ctrl...");
 				state = 2;
 				lastErrorIntegration = 0;
 				lastError = 0;
@@ -114,8 +118,8 @@ public class GotoGoalWithV extends Controller {
 			output.v = input.v / (1 + Math.abs(robot.w)); // Math.abs(e));
 			output.w = w;
 
-			if (state == 0) // && Math.abs(e) > 0.5) {
-				log.info(String.format("V: %.3f, %.3f, %.3f", e, w, output.v));
+			// if (state == 0) // && Math.abs(e) > 0.5) {
+			// log.info(String.format("V: %.3f, %.3f, %.3f", e, w, output.v));
 
 		}
 		// } else
@@ -128,7 +132,7 @@ public class GotoGoalWithV extends Controller {
 			if (output.v > 0.3)
 				output.v = 0.3; ///////
 			// output.w = 0;
-			log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
+			// log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
 			lastVEI = vei;
 			lastVE = ve;
 		} else if (state == 2) { // theta
@@ -145,8 +149,9 @@ public class GotoGoalWithV extends Controller {
 				e_I = lastErrorIntegration + e * dt;
 
 			w = p * e + tki * e_I + tkd * e_D;
-			log.info(String.format("T: %.3f, %.3f, %.3f, %.3f, %.1f, %.1f", d, e, w, robot.theta, robot.m_left_ticks,
-					robot.m_right_ticks));
+			// log.info(String.format("T: %.3f, %.3f, %.3f, %.3f, %.1f, %.1f", d, e, w,
+			// robot.theta, robot.m_left_ticks,
+			// robot.m_right_ticks));
 
 			lastErrorIntegration = e_I;
 			lastError = e;

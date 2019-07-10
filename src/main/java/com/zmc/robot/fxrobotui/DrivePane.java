@@ -284,7 +284,9 @@ public class DrivePane implements Runnable {
         column2.setHalignment(HPos.LEFT); // Override default
         grid.getColumnConstraints().add(column2);
 
-        velocityField = new TextField("0.3");
+        Settings settings = robot.getSettings();
+
+        velocityField = new TextField(String.valueOf(settings.velocity));
         Label label = new Label("Velocity:");
         grid.add(label, 0, 0);
         grid.add(velocityField, 1, 0);
@@ -342,7 +344,7 @@ public class DrivePane implements Runnable {
         Button optionButton = new Button("Options");
 
         optionButton.setOnAction((ActionEvent) -> {
-            Settings settings = new Settings();
+            // Settings settings = new Settings();
             Settings aSettings = this.robot.getSettings();
 
             settings.settingsType = 4;

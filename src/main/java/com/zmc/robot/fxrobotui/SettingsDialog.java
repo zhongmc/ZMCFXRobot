@@ -4,33 +4,9 @@ import java.util.Optional;
 
 import com.zmc.robot.simulator.Settings;
 
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.geometry.Orientation;
-import javafx.scene.Scene;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Dialog;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.control.ButtonType;
-
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Dialog;
 
 public class SettingsDialog {
 

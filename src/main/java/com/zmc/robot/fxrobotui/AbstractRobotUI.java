@@ -164,7 +164,7 @@ public abstract class AbstractRobotUI {
 		}
 
 		xs = (float) (width / 2 + mScale * (x + 0.2));
-		ys = (float) (height / 2 - mScale * y);
+		ys = (float) (height / 2 - mScale * y + 20);
 
 		Font f = Font.font(null, FontWeight.THIN, 12);
 		gc.setFont(f);
