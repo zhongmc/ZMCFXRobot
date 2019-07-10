@@ -11,9 +11,9 @@ public class RearDriveRobot extends AbstractRobot {
 		prev_left_ticks = 0;
 		prev_right_ticks = 0;
 
-		settings.kp = 10; // 25;// 5;
-		settings.ki = 0.20; //// 0.8; // 0.1; //0.01;
-		settings.kd = 0.1; // 0.1;
+		settings.kp = 5; // 25;// 5;
+		settings.ki = 0.10; //// 0.8; // 0.1; //0.01;
+		settings.kd = 0.0; // 0.1;
 
 		settings.pkp = 5;
 		settings.pki = 0.5;
@@ -24,18 +24,18 @@ public class RearDriveRobot extends AbstractRobot {
 		settings.tkd = 0.1;
 
 		settings.atObstacle = 0.3; // 0.15; //0.12;// 0.25; 0.2
-		settings.unsafe = 0.1; // 0.05; // 0.05
+		settings.unsafe = 0.05; // 0.05; // 0.05
 		settings.dfw = 0.25; // 0.25; // 0.20;// 0.30; //0.25
 
-		settings.velocity = 0.3; // 0.50;
+		settings.velocity = 0.15; // 0.50;
 		settings.max_rpm = 200; // 240;
 		settings.min_rpm = 30; // 90; // 110; // 0
 		settings.angleOff = 0;
 		settings.pwm_diff = 0;
 
-		wheel_radius = 0.033;
-
-		wheel_base_length = 0.155;
+		// 黑色轮子 自制板
+		wheel_radius = 0.0312;
+		wheel_base_length = 0.162; // 0.166; 长板
 
 		settings.wheelRadius = wheel_radius;
 		settings.wheelDistance = wheel_base_length;
@@ -59,11 +59,23 @@ public class RearDriveRobot extends AbstractRobot {
 		max_w = (wheel_radius / wheel_base_length) * (2 * min_vel);
 		min_w = 0; // (wheel_radius / wheel_base_length) * (min_vel);
 
-		irSensors[0] = new IRSensor(-0.045, 0.05, Math.PI / 2);
-		irSensors[1] = new IRSensor(0.08, 0.04, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
-		irSensors[2] = new IRSensor(0.162, 0.0, 0);
-		irSensors[3] = new IRSensor(0.08, -0.04, -Math.PI / 4);
-		irSensors[4] = new IRSensor(-0.045, -0.05, -Math.PI / 2);
+		// irSensors[0] = new IRSensor(-0.045, 0.05, Math.PI / 2);
+		// irSensors[1] = new IRSensor(0.08, 0.04, Math.PI / 4); // 0.16,0.045, PI/6
+		// 0.075, 0.035
+		// irSensors[2] = new IRSensor(0.162, 0.0, 0);
+		// irSensors[3] = new IRSensor(0.08, -0.04, -Math.PI / 4);
+		// irSensors[4] = new IRSensor(-0.045, -0.05, -Math.PI / 2);
+
+		irSensors[0] = new IRSensor(-0.073, 0.066, Math.PI / 2);
+		irSensors[1] = new IRSensor(0.061, 0.05, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
+		irSensors[2] = new IRSensor(0.072, 0.0, 0);
+		irSensors[3] = new IRSensor(0.061, -0.05, -Math.PI / 4);
+		irSensors[4] = new IRSensor(-0.073, -0.066, -Math.PI / 2);
+
+		// final double ir_positions[][] = { { -0.073, 0.066, 1 }, { 0.061, 0.05, 1 }, {
+		// 0.072, 0, 1 },
+		// { 0.061, -0.05, 1 }, { -0.073, -0.066, 1 } };
+
 	}
 
 	public double vel_l_to_pwm(double vel) {

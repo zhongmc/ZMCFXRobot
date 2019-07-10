@@ -411,7 +411,7 @@ public class RemoteSimulatorPane {
         intv = (int) (y * 1000);
         cmdStr = cmdStr + intv + ",";
         intv = (int) (angle * 1000);
-        cmdStr = cmdStr + intv + ";";
+        cmdStr = cmdStr + intv + ",180;";
         this.sendCmd(cmdStr);
 
     }

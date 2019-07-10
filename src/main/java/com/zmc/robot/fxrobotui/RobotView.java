@@ -53,7 +53,7 @@ public class RobotView extends Canvas {
         // robot.setObstacles(obstacles);
 
         robot.setCavasDimension(width, height, scale);
-        robot.setPosition(0.5, 0.5, Math.PI / 4);
+        robot.setPosition(0.5, 0.5, Math.PI / 4, 0);
         gc = getGraphicsContext2D();
         draw(gc);
     }
@@ -82,7 +82,7 @@ public class RobotView extends Canvas {
         // robot.setObstacles(obstacles);
 
         robot.setCavasDimension(width, height, mScale);
-        robot.setPosition(0.5, 0.5, Math.PI / 4);
+        robot.setPosition(0.5, 0.5, Math.PI / 4, 0);
         gc = getGraphicsContext2D();
         draw(gc);
     }
@@ -201,7 +201,7 @@ public class RobotView extends Canvas {
 
         double rx = (x - width / 2) / mScale;
         double ry = (height / 2 - y) / mScale;
-        robot.setPosition(rx, ry, Math.PI / 4);
+        robot.setPosition(rx, ry, Math.PI / 4, 0);
         this.invalidate();
 
     }
@@ -230,7 +230,7 @@ public class RobotView extends Canvas {
         this.y = y;
         this.theta = theta;
         this.velocity = velocity;
-        robot.setPosition(x, y, theta);
+        robot.setPosition(x, y, theta, velocity);
         this.invalidate();
 
     }

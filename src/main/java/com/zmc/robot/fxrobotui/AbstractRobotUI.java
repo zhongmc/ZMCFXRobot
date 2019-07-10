@@ -28,7 +28,7 @@ public abstract class AbstractRobotUI {
 	private double mScale = 100;
 
 	// the robot positionb
-	public double x, y, theta;
+	public double x, y, theta, velocity;
 	private double transformMatrix[][] = new double[3][3];
 	private double[] irDistances;
 
@@ -164,14 +164,14 @@ public abstract class AbstractRobotUI {
 		}
 
 		xs = (float) (width / 2 + mScale * (x + 0.2));
-		ys = (float) (height / 2 - mScale * y);
+		ys = (float) (height / 2 - mScale * y + 20);
 
 		Font f = Font.font(null, FontWeight.THIN, 12);
 		gc.setFont(f);
 		gc.setStroke(Color.DARKGRAY);
 		gc.setFill(Color.DARKGRAY);
 		gc.setLineWidth(1);
-		String label = String.format("[%.3f,%.3f:%.1f]", x, y, 180 * theta / Math.PI);
+		String label = String.format("[%.3f,%.3f,%.1f %.2f]", x, y, 180 * theta / Math.PI, velocity);
 		gc.fillText(label, xs, ys);
 		gc.setLineWidth(1);
 
@@ -244,7 +244,7 @@ public abstract class AbstractRobotUI {
 	}
 
 	// 使用robot的原始坐标
-	public void setPosition(double x, double y, double theta) {
+	public void setPosition(double x, double y, double theta, double velocity) {
 
 		// double delt1,delt2,delt3;
 		// delt1 = Math.abs(x - this.x);
@@ -257,6 +257,7 @@ public abstract class AbstractRobotUI {
 		this.x = x;
 		this.y = y;
 		this.theta = theta;
+		this.velocity = velocity;
 		getTransformationMatrix(width / 2 + x * mScale, height / 2 - y * mScale, theta, mScale);
 
 		updateIRDistances();

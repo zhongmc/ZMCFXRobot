@@ -33,6 +33,10 @@ import javafx.scene.layout.HBox;
 import org.apache.log4j.Logger;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.CheckBox;
+import javafx.scene.image.Image;
+
+import javafx.event.EventHandler;
+import javafx.event.ActionEvent;
 
 public class DrivePane implements Runnable {
 
@@ -41,12 +45,15 @@ public class DrivePane implements Runnable {
     private RobotView robotView;
     private ScenseView scenseView;
 
+    private SteerView steerView;
+    private JoystickView joystickView;
+
     private BorderPane border;
 
     private Button homeButton;
     private Button startStopButton;
 
-    private Button leftButton, rightButton, upButton, downButton, stopButton;
+    // private Button leftButton, rightButton, upButton, downButton, stopButton;
     private Label speedLabel, thetaLabel;
 
     private double mSpeed, mTheta;
@@ -284,7 +291,9 @@ public class DrivePane implements Runnable {
         column2.setHalignment(HPos.LEFT); // Override default
         grid.getColumnConstraints().add(column2);
 
-        velocityField = new TextField("0.3");
+        Settings settings = robot.getSettings();
+
+        velocityField = new TextField(String.valueOf(settings.velocity));
         Label label = new Label("Velocity:");
         grid.add(label, 0, 0);
         grid.add(velocityField, 1, 0);
@@ -331,18 +340,18 @@ public class DrivePane implements Runnable {
         slider.setBlockIncrement(20);
         slider.setSnapToTicks(true);
 
-        final Label scalingValue = new Label("100%");
+        // final Label scalingValue = new Label("100%");
 
         slider.valueProperty().addListener((ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
             double scale = new_val.doubleValue();
             zoomRobotView(scale);
-            scalingValue.setText(String.format("%.2f", scale) + "%");
+            // scalingValue.setText(String.format("%.2f", scale) + "%");
         });
 
         Button optionButton = new Button("Options");
 
         optionButton.setOnAction((ActionEvent) -> {
-            Settings settings = new Settings();
+            // Settings settings = new Settings();
             Settings aSettings = this.robot.getSettings();
 
             settings.settingsType = 4;
@@ -367,82 +376,138 @@ public class DrivePane implements Runnable {
         hb.getChildren().addAll(setRouteButton, traceRouteCheckBox);
         // vbButtons.setPadding(new Insets(0, 20, 10, 20));
 
-        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, hb, clearButton, slider, scalingValue,
-                optionButton);
+        HBox hb11 = new HBox();
+        hb11.setSpacing(15);
+        hb11.getChildren().addAll(clearButton, optionButton);
 
-        GridPane grid1 = new GridPane();
-        grid1.setAlignment(Pos.CENTER); // Override default
-        grid1.setHgap(10);
-        grid1.setVgap(12);
+        vbButtons.getChildren().addAll(homeButton, startStopButton, grid, hb, hb11, slider); // , scalingValue,
+                                                                                             // optionButton);
+        /*
+         * GridPane grid1 = new GridPane(); grid1.setAlignment(Pos.CENTER); // Override
+         * default grid1.setHgap(10); grid1.setVgap(12);
+         * 
+         * // Use column constraints to set properties for columns in the grid
+         * ColumnConstraints column01 = new ColumnConstraints();
+         * grid1.getColumnConstraints().add(column01);
+         * 
+         * ColumnConstraints column02 = new ColumnConstraints();
+         * grid1.getColumnConstraints().add(column02);
+         * 
+         * ColumnConstraints column03 = new ColumnConstraints();
+         * grid1.getColumnConstraints().add(column03);
+         * 
+         * // private Button leftButton, rightButton, upButton, downButton, stopButton;
+         * 
+         * upButton = new Button("^"); upButton.setOnAction((ActionEvent) -> {
+         * speedUp(); });
+         * 
+         * grid1.add(upButton, 1, 0);
+         * 
+         * leftButton = new Button("<"); leftButton.setOnAction((ActionEvent) -> {
+         * turnLeft(); });
+         * 
+         * grid1.add(leftButton, 0, 1);
+         * 
+         * stopButton = new Button("O"); stopButton.setOnAction((ActionEvent) -> {
+         * stopDrive(); });
+         * 
+         * grid1.add(stopButton, 1, 1);
+         * 
+         * rightButton = new Button(">"); rightButton.setOnAction((ActionEvnet) -> {
+         * turnRight(); }); grid1.add(rightButton, 2, 1);
+         * 
+         * downButton = new Button("v"); downButton.setOnAction((ActionEvent) -> {
+         * speedDown(); });
+         * 
+         * grid1.add(downButton, 1, 2); vbButtons.getChildren().add(grid1);
+         */
 
-        // Use column constraints to set properties for columns in the grid
-        ColumnConstraints column01 = new ColumnConstraints();
-        grid1.getColumnConstraints().add(column01);
-
-        ColumnConstraints column02 = new ColumnConstraints();
-        grid1.getColumnConstraints().add(column02);
-
-        ColumnConstraints column03 = new ColumnConstraints();
-        grid1.getColumnConstraints().add(column03);
-
-        // private Button leftButton, rightButton, upButton, downButton, stopButton;
-
-        upButton = new Button("^");
-        upButton.setOnAction((ActionEvent) -> {
-            speedUp();
-        });
-
-        grid1.add(upButton, 1, 0);
-
-        leftButton = new Button("<");
-        leftButton.setOnAction((ActionEvent) -> {
-            turnLeft();
-        });
-
-        grid1.add(leftButton, 0, 1);
-
-        stopButton = new Button("O");
-        stopButton.setOnAction((ActionEvent) -> {
-            stopDrive();
-        });
-
-        grid1.add(stopButton, 1, 1);
-
-        rightButton = new Button(">");
-        rightButton.setOnAction((ActionEvnet) -> {
-            turnRight();
-        });
-        grid1.add(rightButton, 2, 1);
-
-        downButton = new Button("v");
-        downButton.setOnAction((ActionEvent) -> {
-            speedDown();
-        });
-
-        grid1.add(downButton, 1, 2);
+        joystickView = new JoystickView(250, 250);
+        vbButtons.getChildren().add(joystickView);
 
         speedLabel = new Label("0.0");
         thetaLabel = new Label("0.0");
 
-        grid1.add(speedLabel, 0, 3);
-        grid1.add(thetaLabel, 2, 3);
+        HBox hb2 = new HBox();
+        hb2.setSpacing(10);
+        hb2.getChildren().addAll(speedLabel, thetaLabel);
 
-        vbButtons.getChildren().add(grid1);
+        vbButtons.getChildren().add(hb2);
 
+        steerView = new SteerView(250, 250);
+        vbButtons.getChildren().add(steerView);
+
+        HBox hb1 = new HBox();
+        hb1.setSpacing(10);
+
+        ImageButton button1, button2, button3;
+
+        button1 = new ImageButton();
+        button2 = new ImageButton();
+        button3 = new ImageButton();
+
+        button1.updateImages(new Image("/images/brake_touch.png", 60, 0, true, true),
+                new Image("/images/brake.png", 60, 0, true, true));
+        button2.updateImages(new Image("/images/speed_touch.png", 60, 0, true, true),
+                new Image("/images/speed.png", 60, 0, true, true));
+        button3.updateImages(new Image("/images/speed_r_touch.png", 60, 0, true, true),
+                new Image("/images/speed_r.png", 60, 0, true, true));
+
+        hb1.getChildren().addAll(button1, button2, button3);
+        vbButtons.getChildren().add(hb1);
+
+        button1.setOnAction((ActionEvent) -> {
+            stopDrive();
+        });
+
+        button2.setOnAction((ActionEvent) -> {
+            speedUp();
+        });
+
+        button3.setOnAction((ActionEvent) -> {
+            speedDown();
+        });
+
+        steerView.setActionHandler(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                mTheta = steerView.getRotateRad();
+                thetaLabel.setText(String.format("%.2f", mTheta));
+                driveSupervisor.setDriveGoal(mSpeed, mTheta);
+            }
+        });
+
+        joystickView.setActionHandler(new EventHandler<JoystickEvent>() {
+            @Override
+            public void handle(JoystickEvent event) {
+                if (Math.abs(event.getAngle()) > 0.05)
+                    mTheta = 0.4 * event.getAngle();
+                else
+                    mTheta = 0;
+
+                mSpeed = 0.5 * event.getThrottle();
+
+                thetaLabel.setText(String.format("%.2f", mTheta));
+                speedLabel.setText(String.format("%.2f", mSpeed));
+                driveSupervisor.setDriveGoal(mSpeed, mTheta);
+            }
+        }
+
+        );
         return vbButtons;
     }
 
     private void speedUp() {
-        mSpeed = mSpeed + 0.05;
+        mSpeed = mSpeed + 0.02;
         if (mSpeed > 0.6)
             mSpeed = 0.6;
-        speedLabel.setText(String.format("%.1f", mSpeed));
+        speedLabel.setText(String.format("%.2f", mSpeed));
 
         driveSupervisor.setDriveGoal(mSpeed, mTheta);
     }
 
     private void speedDown() {
-        mSpeed = mSpeed - 0.05;
+        mSpeed = mSpeed - 0.02;
         if (mSpeed < -0.6)
             mSpeed = -0.6;
         speedLabel.setText(String.format("%.2f", mSpeed));
@@ -463,13 +528,13 @@ public class DrivePane implements Runnable {
     }
 
     private void turnLeft() {
-        mTheta = mTheta + 0.1;
+        mTheta = mTheta + 0.02;
         thetaLabel.setText(String.format("%.2f", mTheta));
         driveSupervisor.setDriveGoal(mSpeed, mTheta);
     }
 
     private void turnRight() {
-        mTheta = mTheta - 0.1;
+        mTheta = mTheta - 0.02;
         thetaLabel.setText(String.format("%.2f", mTheta));
         driveSupervisor.setDriveGoal(mSpeed, mTheta);
 

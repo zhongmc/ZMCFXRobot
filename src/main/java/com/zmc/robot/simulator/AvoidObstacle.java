@@ -1,8 +1,13 @@
 package com.zmc.robot.simulator;
 
+import org.apache.log4j.Logger;
+
 public class AvoidObstacle extends Controller {
 	private Vector uAvo = new Vector();
 	// private Vector u_fw_t = new Vector();
+	private final static String TAG = "AVO";
+
+	Logger log = Logger.getLogger(TAG);
 
 	public AvoidObstacle() {
 		Kp = 5;
@@ -78,7 +83,7 @@ public class AvoidObstacle extends Controller {
 	// @Override
 	Output execute(AbstractRobot robot, Input input, double dt) {
 
-		double sensor_gains[] = { 1, 0.5, 1, 0.5, 1 }; // { 1, 1, 1, 1, 1 };
+		double sensor_gains[] = { 1, 1, 1, 1, 1 }; // { 1, 1, 1, 1, 1 };
 
 		IRSensor[] irSensors = robot.getIRSensors();
 
@@ -94,8 +99,6 @@ public class AvoidObstacle extends Controller {
 		double e_k, e_I, e_D, w, theta_ao;
 
 		theta_ao = Math.atan2(uAvo.y, uAvo.x);
-
-		double theta = Math.atan2((irSensors[2].yw - robot.y), (irSensors[2].xw - robot.x));
 
 		boolean vToObstacle = false;
 		if ((irSensors[1].distance < IRSensor.maxDistance && irSensors[3].distance < IRSensor.maxDistance)
@@ -171,9 +174,10 @@ public class AvoidObstacle extends Controller {
 		w = Kp * e_k + Ki * e_I + Kd * e_D;
 		lastErrorIntegration = e_I;
 		lastError = e_k;
-
 		output.v = input.v;
 		output.w = w;
+
+		// log.info(String.format("AVO: %.3f, %.3f, %.3f", e_k, w, output.v));
 		return output;
 
 	}

@@ -4,9 +4,11 @@ import org.apache.log4j.Logger;
 
 public class FollowWall extends Controller {
 
-	private final static String TAG = "GTG";
+	private final static String TAG = "FLW";
 
 	Logger log = Logger.getLogger(TAG);
+
+	private boolean beCorner = false;
 
 	public double d_fw;
 	int dir;
@@ -37,6 +39,7 @@ public class FollowWall extends Controller {
 		IRSensor[] irSensors = robot.getIRSensors();
 
 		double d = d_fw * 1.42;// 0.32; // 0.35;
+		double d1 = 0;
 
 		int idx = 0;
 		if (dir == 0) // follow left
@@ -52,48 +55,19 @@ public class FollowWall extends Controller {
 
 				irSensors[1].getWallVector(p1, robot, d);
 				irSensors[2].getWallVector(p0, robot, d);
-
-				// p1.x = irSensors[1].xw;
-				// p1.y = irSensors[1].yw;
-				// p0.x = irSensors[2].xw;
-				// p0.y = irSensors[2].yw;
-				// if( irSensors[2].distance >= IRSensor.maxDistance ) //ǽ��ֱ����
-				// p0 = irSensors[2].getWallVector(robot.x, robot.y, robot.theta, d_fw);
+				d1 = irSensors[2].distance;
 				break;
 			case 1:
 
 				irSensors[0].getWallVector(p1, robot, d);
 				irSensors[2].getWallVector(p0, robot, d);
-
-				// p1.x = irSensors[0].xw;
-				// p1.y = irSensors[0].yw;
-				// p0.x = irSensors[2].xw;
-				// p0.y = irSensors[2].yw;
-				//
-				// if( irSensors[2].distance >= IRSensor.maxDistance )
-				// {
-				// p0 = irSensors[2].getWallVector(robot.x, robot.y, robot.theta, d_fw - (d_fw -
-				// irSensors[0].distance));
-				//
-				// }
-
+				d1 = irSensors[2].distance;
 				break;
 			case 2:
 
 				irSensors[0].getWallVector(p1, robot, d);
 				irSensors[1].getWallVector(p0, robot, d);
-
-				// p1.x = irSensors[0].xw;
-				// p1.y = irSensors[0].yw;
-				// p0.x = irSensors[1].xw;
-				// p0.y = irSensors[1].yw;
-				//
-				// if( irSensors[1].distance >= IRSensor.maxDistance ) //ǽ��ֱ����
-				// {
-				// p0 = irSensors[1].getWallVector(robot.x, robot.y, robot.theta, d_fw - (d_fw -
-				// irSensors[0].distance));
-				// }
-
+				d1 = irSensors[1].distance;
 				break;
 			}
 
@@ -114,37 +88,26 @@ public class FollowWall extends Controller {
 
 				irSensors[4].getWallVector(p1, robot, d);
 				irSensors[3].getWallVector(p0, robot, d);
-
-				// p1.x = irSensors[4].xw;
-				// p1.y = irSensors[4].yw;
-				// p0.x = irSensors[3].xw;
-				// p0.y = irSensors[3].yw;
+				d1 = irSensors[3].distance;
 				break;
 			case 3:
 				irSensors[4].getWallVector(p1, robot, d);
 				irSensors[2].getWallVector(p0, robot, d);
-
-				// p1.x = irSensors[4].xw;
-				// p1.y = irSensors[4].yw;
-				// p0.x = irSensors[2].xw;
-				// p0.y = irSensors[2].yw;
-				// if( irSensors[2].distance >= IRSensor.maxDistance ) //ǽ��ֱ����
-				// p0 = irSensors[2].getWallVector(robot.x, robot.y, robot.theta, d_fw);
+				d1 = irSensors[2].distance;
 				break;
 			case 4:
 
 				irSensors[3].getWallVector(p1, robot, d);
 				irSensors[2].getWallVector(p0, robot, d);
-				// p1.x = irSensors[3].xw;
-				// p1.y = irSensors[3].yw;
-				// p0.x = irSensors[2].xw;
-				// p0.y = irSensors[2].yw;
-				// if( irSensors[2].distance >= IRSensor.maxDistance ) //ǽ��ֱ����
-				// p0 = irSensors[2].getWallVector(robot.x, robot.y, robot.theta, d_fw);
+				d1 = irSensors[2].distance;
 				break;
 			}
 		}
 
+		if (d1 > IRSensor.maxDistance - 0.1) // robot.getSettings().atObstacle )
+			beCorner = true;
+		else
+			beCorner = false;
 	}
 
 	@Override
@@ -206,10 +169,22 @@ public class FollowWall extends Controller {
 		lastErrorIntegration = e_I;
 		lastError = e;
 
+		// 控制W 拐弯半径，避免撞墙
+		// D = (2*V - W*L)/(2*W)
+
+		if (beCorner) {
+			double aw = Math.abs(w);
+			double d = (2 * input.v - aw * robot.wheel_base_length) / (2 * aw);
+			// this.d_fw + 车长 0.25 + 0.15 = 0.4
+			if (d < 0.45) {
+				aw = 2 * input.v / (0.9 + robot.wheel_base_length);
+				w = Math.signum(w) * aw;
+			}
+		}
 		output.v = input.v; /// (1 + Math.abs(robot.w)); // 2 * Math.abs(e));
 		output.w = w;
 
-		log.info(String.format("FW: %.3f, %.3f, %.3f", output.v, e, w));
+		// log.info(String.format(" %.3f, %.3f, %.3f", output.v, e, w));
 
 		return output;
 	}

@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import com.zmc.robot.simulator.ControllerInfo;
 import com.zmc.robot.simulator.RearDriveRobot;
 import com.zmc.robot.simulator.RobotState;
+import com.zmc.robot.simulator.Settings;
 import com.zmc.robot.simulator.Supervisor;
 import com.sun.javafx.geom.Point2D;
 import javafx.application.Platform;
@@ -31,6 +32,9 @@ import org.apache.log4j.Logger;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.CheckBox;
 
+/**
+ * not used see DrivePane
+ */
 public class LocalSimulatorPane implements Runnable {
 
     // private RobotCanvasView robotView;
@@ -261,7 +265,10 @@ public class LocalSimulatorPane implements Runnable {
         column2.setHalignment(HPos.LEFT); // Override default
         grid.getColumnConstraints().add(column2);
 
-        velocityField = new TextField("0.3");
+        Settings settings = robot.getSettings();
+
+        velocityField = new TextField(String.valueOf(settings.velocity));
+
         Label label = new Label("Velocity:");
         grid.add(label, 0, 0);
         grid.add(velocityField, 1, 0);
