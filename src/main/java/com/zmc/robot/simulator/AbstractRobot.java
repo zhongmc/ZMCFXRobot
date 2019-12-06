@@ -6,26 +6,27 @@ public abstract class AbstractRobot {
 
 	protected Settings settings = new Settings();
 
-	double x, y, theta; // λ��`
+	double x, y, theta; // 位置
 	double w;
 
 	double velocity;
 
-	double wheel_radius; // ���Ӱ뾶
-	public double wheel_base_length; // �־�
+	double wheel_radius; //轮半径
+	public double wheel_base_length; // 轮距
 
-	// ������С����ÿ����Ȧ��
+	// 
 	double max_rpm;
 	double min_rpm;
 
-	double max_vel, min_vel; // min_vel ������������ƶ�����С���ٶ�
+	double max_vel, min_vel; // min_vel
 
-	double max_v, min_v;
-	double min_w, max_w;
+	// double max_v, min_v;
+	// double min_w, max_w;
 	// double angle;
 
-	int ticks_per_rev_l, ticks_per_rev_r; // ÿȦ��������
-	double m_per_tick_l, m_per_tick_r; // ÿ������ת���ľ���
+	double max_w;  //转弯限制
+	int ticks_per_rev_l, ticks_per_rev_r; 
+	double m_per_tick_l, m_per_tick_r; 
 	long prev_left_ticks = 0, prev_right_ticks = 0;
 
 	IRSensor irSensors[] = new IRSensor[5];
@@ -214,9 +215,10 @@ public abstract class AbstractRobot {
 		min_rpm = settings.min_rpm; // 113
 		min_vel = min_rpm * 2 * Math.PI / 60;
 
-		max_v = max_vel * wheel_radius;
-		min_v = min_vel * wheel_radius;
-		max_w = (wheel_radius / wheel_base_length) * (max_vel - min_vel);
+		// max_w = 1;
+		// max_v = max_vel * wheel_radius;
+		// min_v = min_vel * wheel_radius;
+		// max_w = (wheel_radius / wheel_base_length) * (max_vel - min_vel);
 
 		// Log.i(TAG, "UpdateSettings: mrpm:" + max_rpm + ", min_rpm:" + min_rpm);
 	}

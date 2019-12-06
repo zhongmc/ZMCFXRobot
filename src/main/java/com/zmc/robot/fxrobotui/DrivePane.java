@@ -679,7 +679,7 @@ public class DrivePane implements Runnable {
 
             try {
 
-                Thread.sleep(50);
+                Thread.sleep(100);
                 Platform.runLater(timmerHandler);
             } catch (Exception e) {
 
@@ -693,7 +693,7 @@ public class DrivePane implements Runnable {
         public void run() {
             if (isGoing && !supervisor.atGoal()) {
 
-                supervisor.execute(0, 0, 0.05);
+                supervisor.execute(0, 0, 0.1);
                 RobotState state = supervisor.getRobotState();
                 robotView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
                 scenseView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
@@ -706,7 +706,7 @@ public class DrivePane implements Runnable {
             }
 
             if (mSpeed != 0 || mTheta != 0) {
-                driveSupervisor.execute(0, 0, 0.05);
+                driveSupervisor.execute(0, 0, 0.1);
                 RobotState state = driveSupervisor.getRobotState();
                 robotView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
                 scenseView.setRobotPosition(state.x, state.y, state.theta, state.velocity);

@@ -164,7 +164,9 @@ public class Supervisor {
 
 		Output output = null;
 		if (mMode == 0) {
-			output = executeGoToGoal(dt);
+			output = executeFollowWallGoToGoal(dt);
+			
+			//output = executeAvoidAndFollowWallGoToGoal(dt);
 		} else if (mMode == 2) // trace route
 		{
 			output = executeTraceRoute(dt);
@@ -190,7 +192,125 @@ public class Supervisor {
 
 	}
 
-	public Output executeGoToGoal(double dt) {
+
+
+	//直接follow Wall
+	public Output executeFollowWallGoToGoal(double dt)
+	{
+		if (at_goal) {
+			if (m_state != S_STOP)
+				log.info("At Goal! " + counter);
+
+			m_state = S_STOP; // s_stop;
+			StopMotor();
+			return null;
+		} else if (unsafe) {
+			if (m_state != S_STOP)
+				log.info("Danger! " + counter + "; ird=" + irDistance);
+			m_state = S_STOP; // s_stop;
+			StopMotor();
+			return null;
+		}
+
+		if(m_currentController != m_GoToGoal && m_currentController != m_FollowWall)
+			m_currentController = m_GoToGoal;
+		
+		
+		if (m_state == S_STOP && !unsafe) // recover from stop
+		{
+			m_state = S_GTG; // gotoGoal;
+			m_currentController = m_GoToGoal;
+			m_GoToGoal.reset();
+		}
+
+		if( m_currentController == m_GoToGoal )
+		{
+			  if( at_obstacle )
+			  {
+
+					this.m_SlidingMode.execute(robot, m_input, dt);
+					if( m_SlidingMode.slidingLeft() )
+						m_FollowWall.dir = 0;
+					else if( m_SlidingMode.slidingRight() )
+						m_FollowWall.dir = 1;
+				  
+					else
+						m_FollowWall.dir = 0;
+						
+					
+					log.info("Change to fallow wall ..." + m_FollowWall.dir);
+					 m_FollowWall.reset();
+					 m_currentController = m_FollowWall;
+						
+					 set_progress_point();
+
+					 xf = robot.x;
+					 yf = robot.y;
+					 theta = robot.theta;
+					 
+			  }
+		
+			
+		}
+		else //follow wall
+		{
+			this.m_SlidingMode.execute(robot, m_input, dt);
+			
+			if (progress_made) {
+				
+				if (m_FollowWall.dir == 0
+						&& m_SlidingMode.quitSlidingLeft())// !m_SlidingMode.slidingLeft())
+				{
+					m_state = S_GTG; // gotoGoal;
+					m_currentController = m_GoToGoal;
+					m_GoToGoal.reset();
+					log.info("Change to go to goal state(FW L PM) "
+							+ counter + ", IDS=" + irDistance);
+
+				} else if (m_FollowWall.dir == 1
+						&& m_SlidingMode.quitSlidingRight())// !m_SlidingMode.slidingRight())
+				{
+					m_state = S_GTG; // gotoGoal;
+					m_currentController = m_GoToGoal;
+					m_GoToGoal.reset();
+					log.info( "Change to go to goal state (FW R PM) "
+							+ counter + ", IDS=" + irDistance);
+				}
+//				if( shouldGotoGoal())
+//				{
+//					m_state = S_GTG; // gotoGoal;
+//					m_currentController = m_GoToGoal;
+//					m_GoToGoal.reset();
+//					Log.i(TAG, "Change to go to goal 2");
+//					
+//				}
+				else
+				{
+					
+					  Point2D p = getGoalCrossPoint();
+					  
+					  if( p != null )
+					  {
+							m_state = S_GTG; // gotoGoal;
+							log.info("Change to goto goal while meet cross point..." );
+							m_GoToGoal.reset();
+							m_currentController = m_GoToGoal;
+						  
+					  }
+					
+					
+				}
+			}
+
+		}
+		
+		return m_currentController.execute(robot, m_input, dt); 
+		
+		
+	}
+
+
+	public Output executeAvoidAndFollowWallGoToGoal(double dt) {
 
 		mCtrlInfo.reset();
 		if (at_goal) {

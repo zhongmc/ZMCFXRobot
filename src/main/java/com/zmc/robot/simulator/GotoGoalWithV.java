@@ -129,8 +129,8 @@ public class GotoGoalWithV extends Controller {
 			vei = lastVEI + ve * dt;
 			ved = (ve - lastVE) / dt;
 			output.v = pkp * ve + pki * vei + pkd * ved; //
-			if (output.v > 0.3)
-				output.v = 0.3; ///////
+			if (output.v > input.v)
+				output.v = input.v; ///////
 			// output.w = 0;
 			// log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
 			lastVEI = vei;

@@ -33,6 +33,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.Slider;
 
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+
 public class RemoteSimulatorPane {
 
     private RobotView robotView;
@@ -53,6 +58,7 @@ public class RemoteSimulatorPane {
     private ChoiceBox<String> baundRateChouceBox;
 
     private TextField cmdField;
+    private TextField velocityField, angleField;
 
     private SerialPortUtil serialPortUtil;
     private String selectedCom;
@@ -85,27 +91,35 @@ public class RemoteSimulatorPane {
                         robotView.setTarget(x, y);
 
                         Point2D p = robotView.getTarget();
-                        double angle = 0;
-                        // String angleStr = angleField.getText();
-                        // if (angleStr != null && !angleStr.isEmpty()) {
-                        // try {
+                        double angle = 0, v = 0.15;
 
-                        // int in = Integer.valueOf(angleStr);
+                        String angleStr = angleField.getText();
+                        if (angleStr != null && !angleStr.isEmpty()) {
+                            try {
 
-                        // if (in <= 180)
-                        // angle = (in * Math.PI) / 180;
-                        // else {
-                        // in = in - 360;
-                        // angle = (in * Math.PI) / 180;
-                        // }
+                                int in = Integer.valueOf(angleStr);
 
-                        // } catch (Exception e) {
+                                if (in <= 180)
+                                    angle = (in * Math.PI) / 180;
+                                else {
+                                    in = in - 360;
+                                    angle = (in * Math.PI) / 180;
+                                }
 
-                        // }
-                        // }
+                            } catch (Exception e) {
 
-                        log.info("Set target to:" + p.x + "," + p.y + ": " + angle);
-                        setRemoteGoal(p.x, p.y, angle);
+                            }
+                        }
+
+                        String vStr = velocityField.getText();
+                        if (vStr != null && !vStr.isEmpty()) {
+                            v = Double.valueOf(vStr);
+                        }
+
+                        log.info("Set target to (x,y; v, angle):" + p.x + "," + p.y + ": " + v + "," + angle);
+
+
+                        setRemoteGoal(p.x, p.y, angle, v);
 
                         latestClickRunner = null;
                     });
@@ -181,6 +195,32 @@ public class RemoteSimulatorPane {
             }
 
         });
+
+
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER); // Override default
+        grid.setHgap(10);
+        grid.setVgap(12);
+
+        // Use column constraints to set properties for columns in the grid
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setHalignment(HPos.RIGHT); // Override default
+        grid.getColumnConstraints().add(column1);
+
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHalignment(HPos.LEFT); // Override default
+        grid.getColumnConstraints().add(column2);
+
+        velocityField = new TextField(String.valueOf(0.12));
+        Label label = new Label("Velocity:");
+        grid.add(label, 0, 0);
+        grid.add(velocityField, 1, 0);
+
+        label = new Label("Goal angle:");
+        angleField = new TextField("0");
+        grid.add(label, 0, 1);
+        grid.add(angleField, 1, 1);
+        vbButtons.getChildren().add(grid);
 
         Slider slider = new Slider();
         slider.setMin(50);
@@ -403,7 +443,7 @@ public class RemoteSimulatorPane {
         sendCmd(cmdStr);
     }
 
-    private void setRemoteGoal(double x, double y, double angle) {
+    private void setRemoteGoal(double x, double y, double angle, double v) {
         // todo
         int intv;
         intv = (int) (x * 1000.0);
@@ -411,7 +451,10 @@ public class RemoteSimulatorPane {
         intv = (int) (y * 1000);
         cmdStr = cmdStr + intv + ",";
         intv = (int) (angle * 1000);
-        cmdStr = cmdStr + intv + ",180;";
+        cmdStr = cmdStr + intv + ",";
+        intv = (int)(v * 1000);
+        cmdStr = cmdStr + intv + ";";
+
         this.sendCmd(cmdStr);
 
     }
@@ -479,7 +522,7 @@ public class RemoteSimulatorPane {
     private void comDataReaded(byte[] buf, int len) {
 
         String strValue = new String(buf, 0, len);
-        if (strValue.startsWith("RP")) // robot position
+        if (strValue.startsWith("RP")) // robot position x,y,Q,w,v (double * 10000)
         {
             // log.info(strValue);
             int intVal;
@@ -489,21 +532,28 @@ public class RemoteSimulatorPane {
             String tmp = strValue.substring(idx1, idx2);
 
             intVal = Integer.valueOf(tmp);
-            double x = (double) intVal / 10000;
+            double x = (double) intVal / 1000;
             idx1 = idx2 + 1;
             idx2 = strValue.indexOf(',', idx1);
             tmp = strValue.substring(idx1, idx2);
             intVal = Integer.valueOf(tmp);
-            double y = (double) intVal / 10000;
+            double y = (double) intVal / 1000;
 
             idx1 = idx2 + 1;
             idx2 = strValue.indexOf(',', idx1);
             tmp = strValue.substring(idx1, idx2);
             intVal = Integer.valueOf(tmp);
-            double theta = (double) intVal / 10000;
+            double theta = (double) intVal / 1000;
+
+            idx1 = idx2 + 1;
+            idx2 = strValue.indexOf(',', idx1);
+            tmp = strValue.substring(idx1, idx2);
+            intVal = Integer.valueOf(tmp);
+            double w = (double) intVal / 1000;
 
             tmp = strValue.substring(idx2 + 1);
-            double v = Double.valueOf(tmp);
+            intVal = Integer.valueOf(tmp);
+            double v = (double) intVal / 1000;
 
             Platform.runLater(() -> {
                 robotView.setRobotPosition(x, y, theta, v);

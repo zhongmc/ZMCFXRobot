@@ -41,9 +41,9 @@ public class TTRobot extends AbstractRobot {
 
 		min_vel = min_rpm * 2 * Math.PI / 60;
 
-		max_v = max_vel * wheel_radius;
-		min_v = min_vel * wheel_radius;
-		max_w = (wheel_radius / wheel_base_length) * (max_vel - min_vel);
+		// max_v = max_vel * wheel_radius;
+		// min_v = min_vel * wheel_radius;
+		// max_w = (wheel_radius / wheel_base_length) * (max_vel - min_vel);
 
 		irSensors[0] = new IRSensor(-0.11, 0.063, Math.PI / 2);
 		irSensors[1] = new IRSensor(0.062, 0.045, Math.PI / 4);

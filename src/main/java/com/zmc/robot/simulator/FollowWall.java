@@ -172,15 +172,15 @@ public class FollowWall extends Controller {
 		// 控制W 拐弯半径，避免撞墙
 		// D = (2*V - W*L)/(2*W)
 
-		if (beCorner) {
-			double aw = Math.abs(w);
-			double d = (2 * input.v - aw * robot.wheel_base_length) / (2 * aw);
-			// this.d_fw + 车长 0.25 + 0.15 = 0.4
-			if (d < 0.45) {
-				aw = 2 * input.v / (0.9 + robot.wheel_base_length);
-				w = Math.signum(w) * aw;
-			}
-		}
+		// if (beCorner) {
+		// 	double aw = Math.abs(w);
+		// 	double d = (2 * input.v - aw * robot.wheel_base_length) / (2 * aw);
+		// 	// this.d_fw + 车长 0.25 + 0.15 = 0.4
+		// 	if (d < 0.45) {
+		// 		aw = 2 * input.v / (0.9 + robot.wheel_base_length);
+		// 		w = Math.signum(w) * aw;
+		// 	}
+		// }
 		output.v = input.v; /// (1 + Math.abs(robot.w)); // 2 * Math.abs(e));
 		output.w = w;
 
