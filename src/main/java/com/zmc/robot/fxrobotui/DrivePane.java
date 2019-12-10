@@ -662,6 +662,7 @@ public class DrivePane implements Runnable {
         supervisor.setIrDistances(irDistances);
 
         supervisor.reset();
+        // driveSupervisor.reset();
         isPause = false;
     }
 

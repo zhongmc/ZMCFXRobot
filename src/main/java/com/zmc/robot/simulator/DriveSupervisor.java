@@ -11,7 +11,7 @@ public class DriveSupervisor {
 	Logger log = Logger.getLogger(TAG);
 
 	DriveController m_driver = new DriveController();
-
+	DifferencialController mDiffCtrl = new DifferencialController();
 	AbstractRobot robot;
 
 	boolean mSimulateMode = true;
@@ -22,12 +22,13 @@ public class DriveSupervisor {
 	public void setRobot(AbstractRobot robot) {
 		this.robot = robot;
 		m_driver.updateSettings(robot.getSettings());
+		mDiffCtrl.updateSettings( robot.getSettings());
 	}
 
 	public void setDriveGoal(double v, double theta) {
 		m_driver.setGoal(v, theta);
 		m_input.v = v;
-		m_input.turning = theta;
+		m_input.w = theta;
 	}
 
 	public void execute(long left_ticks, long right_ticks, double dt) {
@@ -39,11 +40,20 @@ public class DriveSupervisor {
 			robot.updateState(left_ticks, right_ticks, dt);
 
 		m_output = m_driver.execute(robot, m_input, dt);
-		double v = m_output.v;
-		double w = m_output.w;
 
-		PWMOut pwm = robot.getPWMOut(v, w);
-		robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
+		Input in = new Input();
+		in.v = m_output.v;
+		in.w = m_output.w;
+	  
+		Output out = mDiffCtrl.execute(robot, in, dt);
+		
+		int pwm_l = (int)robot.vel_l_to_pwm(out.vel_l );
+		int pwm_r = (int)robot.vel_r_to_pwm(out.vel_r );
+
+		robot.moveMotor(pwm_l, pwm_r, dt);
+
+		// PWMOut pwm = robot.getPWMOut(v, w);
+		// robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
 
 		// Vel mVel = robot.ensure_w(v, w);
 
@@ -92,6 +102,7 @@ public class DriveSupervisor {
 		m_input.v = settings.velocity;
 		robot.updateSettings(settings);
 		m_driver.updateSettings(settings);
+		mDiffCtrl.updateSettings(settings);
 
 	}
 

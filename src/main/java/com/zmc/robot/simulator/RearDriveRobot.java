@@ -11,13 +11,13 @@ public class RearDriveRobot extends AbstractRobot {
 		prev_left_ticks = 0;
 		prev_right_ticks = 0;
 
-		settings.kp = 2; // 25;// 5;
+		settings.kp = 4; // 25;// 5;
 		settings.ki = 0.05; //// 0.8; // 0.1; //0.01;
 		settings.kd = 0.0; // 0.1;
 
-		settings.pkp = 5;
-		settings.pki = 0.1;
-		settings.pkd = 0.1;
+		settings.pkp = 0.4;//5;
+		settings.pki = 0.6;//0.1
+		settings.pkd = 0.001;
 
 		settings.tkp = 10;
 		settings.tki = 0.2;
@@ -57,12 +57,14 @@ public class RearDriveRobot extends AbstractRobot {
 
 		max_w = 1.5;  //转弯限制
 
-		irSensors[0] = new IRSensor(-0.073, 0.066, Math.PI / 2);
-		irSensors[1] = new IRSensor(0.061, 0.05, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
-		irSensors[2] = new IRSensor(0.072, 0.0, 0);
-		irSensors[3] = new IRSensor(0.061, -0.05, -Math.PI / 4);
-		irSensors[4] = new IRSensor(-0.073, -0.066, -Math.PI / 2);
+		irSensors[0] = new IRSensor(-0.085, 0.067, Math.PI / 2);
+		irSensors[1] = new IRSensor(0.052, 0.057, Math.PI / 4); // 0.16,0.045, PI/6 0.075, 0.035
+		irSensors[2] = new IRSensor(0.063, 0.0, 0);
+		irSensors[3] = new IRSensor(0.052, -0.057, -Math.PI / 4);
+		irSensors[4] = new IRSensor(-0.085, -0.067, -Math.PI / 2);
 
+	
+	  
 		// final double ir_positions[][] = { { -0.073, 0.066, 1 }, { 0.061, 0.05, 1 }, {
 		// 0.072, 0, 1 },
 		// { 0.061, -0.05, 1 }, { -0.073, -0.066, 1 } };

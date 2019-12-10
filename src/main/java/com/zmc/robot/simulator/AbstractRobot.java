@@ -9,6 +9,8 @@ public abstract class AbstractRobot {
 	double x, y, theta; // 位置
 	double w;
 
+	double vel_l, vel_r;
+	
 	double velocity;
 
 	double wheel_radius; //轮半径
@@ -53,6 +55,18 @@ public abstract class AbstractRobot {
 	public AbstractRobot() {
 	}
 
+
+	public double normalizeVel(double refVel, double inVel )
+	{
+		if( refVel * inVel < 0 )
+			return 0;
+		if( inVel > max_vel )
+			return max_vel;
+		if( inVel < -max_vel )
+			return -max_vel;
+		return inVel;
+	}
+
 	public String toString() {
 		return x + ", " + y + ":" + theta;
 	}
@@ -76,8 +90,8 @@ public abstract class AbstractRobot {
 
 		// long left_ticks, right_ticks;
 		if (prev_right_ticks == right_ticks && prev_left_ticks == left_ticks) {
-			// vel_l = 0;
-			// vel_r = 0;
+			vel_l = 0;
+			vel_r = 0;
 			velocity = 0;
 			mState.velocity = 0;
 			return; // no change
@@ -87,8 +101,8 @@ public abstract class AbstractRobot {
 		d_left = (left_ticks - prev_left_ticks) * m_per_tick_l;
 		d_right = (right_ticks - prev_right_ticks) * m_per_tick_r;
 
-		// vel_l = (d_left / wheel_radius) / dt;
-		// vel_r = (d_right / wheel_radius) / dt;
+		vel_l = (d_left / wheel_radius) / dt;
+		vel_r = (d_right / wheel_radius) / dt;
 
 		velocity = (d_right + d_left) / (2 * dt);
 

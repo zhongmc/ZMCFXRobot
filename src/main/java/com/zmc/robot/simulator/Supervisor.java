@@ -29,6 +29,7 @@ public class Supervisor {
 	FollowWall m_FollowWall = new FollowWall();
 	SlidingMode m_SlidingMode = new SlidingMode();
 
+	DifferencialController m_DiffCtrl = new DifferencialController();
 	// GotoGoalVelocityCtrl m_gtgv = new GotoGoalVelocityCtrl();
 	// CircleAvoidObstacle m_CAVO = new CircleAvoidObstacle();
 
@@ -100,7 +101,7 @@ public class Supervisor {
 
 		m_input.x_g = x;
 		m_input.y_g = y;
-		m_input.theta = theta;
+		m_input.targetAngle = theta;
 
 		at_goal = false;
 
@@ -121,7 +122,7 @@ public class Supervisor {
 
 		m_input.x_g = x;
 		m_input.y_g = y;
-		m_input.theta = theta;
+		m_input.targetAngle = theta;
 		m_input.v = v;
 
 		at_goal = false;
@@ -180,15 +181,21 @@ public class Supervisor {
 		if (m_currentController != null)
 			m_currentController.getControllorInfo(mCtrlInfo);
 
-		double v = output.v;
-		// Math.min(v1, v2);
-		// if (v != 0 && v < robot.min_v)
-		// v = 1.01 * robot.min_v;
-
-		double w = output.w; // Math.max( Math.min(output.w, robot.max_w), -robot.max_w);
-
-		PWMOut pwm = robot.getPWMOut(v, w);
-		robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
+			Input in = new Input();
+			in.v = output.v;
+			in.w = output.w;
+		  
+			Output out = m_DiffCtrl.execute(robot, in, dt);
+			
+			int pwm_l = (int)robot.vel_l_to_pwm(out.vel_l );
+			int pwm_r = (int)robot.vel_r_to_pwm(out.vel_r );
+	
+			robot.moveMotor(pwm_l, pwm_r, dt);
+	
+		// double v = output.v;
+		// double w = output.w; // Math.max( Math.min(output.w, robot.max_w), -robot.max_w);
+		// PWMOut pwm = robot.getPWMOut(v, w);
+		// robot.moveMotor(pwm.pwm_l, pwm.pwm_r, dt);
 
 	}
 
@@ -786,10 +793,10 @@ public class Supervisor {
 
 		at_goal = false;
 		if (d < d_stop + 0.005) {
-			if (Math.abs(robot.theta - this.m_input.theta) < 0.05) // 0.05
+			if (Math.abs(robot.theta - this.m_input.targetAngle) < 0.05) // 0.05
 			{
 				at_goal = true;
-				log.info(String.format("Dis at goal and:%.3f:%.3f", robot.theta, m_input.theta));
+				log.info(String.format("Dis at goal and:%.3f:%.3f", robot.theta, m_input.targetAngle));
 			}
 		}
 		if (mMode == 1)
@@ -862,6 +869,7 @@ public class Supervisor {
 
 		m_traceRoute.updateSettings(settings);
 
+		m_DiffCtrl.updateSettings(settings);
 		// m_CAVO.updateSettings(settings );
 
 		// m_SlidingMode;
@@ -881,6 +889,8 @@ public class Supervisor {
 		m_FollowWall.reset();
 		m_AvoidObstacle.reset();
 		m_traceRoute.reset();
+		m_DiffCtrl.reset();
+
 		// m_CAVO.reset();
 		// m_gtgv.reset();
 

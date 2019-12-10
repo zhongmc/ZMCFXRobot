@@ -92,7 +92,7 @@ public class GotoGoalWithV extends Controller {
 		}
 
 		if (state == 2)
-			theta_g = input.theta;
+			theta_g = input.targetAngle;
 
 		e = theta_g - robot.theta;
 		e = Math.atan2(Math.sin(e), Math.cos(e));
@@ -115,7 +115,7 @@ public class GotoGoalWithV extends Controller {
 			w = p * e + Ki * e_I + Kd * e_D;
 			lastErrorIntegration = e_I;
 			lastError = e;
-			output.v = input.v / (1 + Math.abs(robot.w)); // Math.abs(e));
+			output.v = input.v; // / (1 + Math.abs(w)); // robot.w Math.abs(e));
 			output.w = w;
 
 			// if (state == 0) // && Math.abs(e) > 0.5) {
