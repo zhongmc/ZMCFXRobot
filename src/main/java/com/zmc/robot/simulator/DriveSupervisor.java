@@ -106,4 +106,10 @@ public class DriveSupervisor {
 
 	}
 
+	public void reset()
+	{
+		m_driver.reset( robot );
+		mDiffCtrl.reset();
+	}
+
 }

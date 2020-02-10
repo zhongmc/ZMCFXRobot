@@ -22,6 +22,8 @@ public class SettingsPane {
     private TextField p_kpField, p_kiField, p_kdField;
     private TextField t_kpField, t_kiField, t_kdField;
 
+    private TextField dif_kpField, dif_kiField, dif_kdField;
+
     private TextField atObstacleField, unsafeField, followWallField;
     private TextField velocityField, maxRPMField, minRPMField, radiusField, wheelDistanceField;
     private final Button btnApply = new Button("Apply");
@@ -39,23 +41,28 @@ public class SettingsPane {
         mSettings = settings;
         if (d_kpField == null)
             return;
-        d_kpField.setText(String.format("%.2f", settings.kp));
-        d_kiField.setText(String.format("%.2f", settings.ki));
-        d_kdField.setText(String.format("%.2f", settings.kd));
+        d_kpField.setText(String.format("%.3f", settings.kp));
+        d_kiField.setText(String.format("%.3f", settings.ki));
+        d_kdField.setText(String.format("%.3f", settings.kd));
 
-        p_kpField.setText(String.format("%.2f", settings.pkp));
-        p_kiField.setText(String.format("%.2f", settings.pki));
-        p_kdField.setText(String.format("%.2f", settings.pkd));
+        p_kpField.setText(String.format("%.3f", settings.pkp));
+        p_kiField.setText(String.format("%.3f", settings.pki));
+        p_kdField.setText(String.format("%.3f", settings.pkd));
 
-        t_kpField.setText(String.format("%.2f", settings.tkp));
-        t_kiField.setText(String.format("%.2f", settings.tki));
-        t_kdField.setText(String.format("%.2f", settings.tkd));
+        t_kpField.setText(String.format("%.3f", settings.tkp));
+        t_kiField.setText(String.format("%.3f", settings.tki));
+        t_kdField.setText(String.format("%.3f", settings.tkd));
 
-        atObstacleField.setText(String.format("%.2f", settings.atObstacle));
-        unsafeField.setText(String.format("%.2f", settings.unsafe));
-        followWallField.setText(String.format("%.2f", settings.dfw));
+        dif_kpField.setText(String.format("%.3f", settings.dkp));
+        dif_kiField.setText(String.format("%.3f", settings.dki));
+        dif_kdField.setText(String.format("%.3f", settings.dkd));
 
-        velocityField.setText(String.format("%.2f", settings.velocity));
+
+        atObstacleField.setText(String.format("%.3f", settings.atObstacle));
+        unsafeField.setText(String.format("%.3f", settings.unsafe));
+        followWallField.setText(String.format("%.3f", settings.dfw));
+
+        velocityField.setText(String.format("%.3f", settings.velocity));
         maxRPMField.setText(String.format("%d", settings.max_rpm));
         minRPMField.setText(String.format("%d", settings.min_rpm));
         radiusField.setText(String.format("%.3f", settings.wheelRadius));
@@ -74,6 +81,10 @@ public class SettingsPane {
         mSettings.tkp = Double.valueOf(t_kpField.getText());
         mSettings.tki = Double.valueOf(t_kiField.getText());
         mSettings.tkd = Double.valueOf(t_kdField.getText());
+
+        mSettings.dkp = Double.valueOf(d_kpField.getText());
+        mSettings.dki = Double.valueOf(d_kiField.getText());
+        mSettings.dkd = Double.valueOf(d_kdField.getText());
 
         mSettings.atObstacle = Double.valueOf(atObstacleField.getText());
         mSettings.unsafe = Double.valueOf(unsafeField.getText());
@@ -107,6 +118,10 @@ public class SettingsPane {
         tabTPID.setText("PID-T");
         tabTPID.setContent(thetaPIDPane());
 
+        Tab tabDifPID = new Tab();
+        tabDifPID.setText("PID-Diff");
+        tabDifPID.setContent( DifferencialPIDPane() );
+
         Tab tabObstacle = new Tab();
         tabObstacle.setText("Obstacle");
         tabObstacle.setContent(obstaclePane());
@@ -115,7 +130,7 @@ public class SettingsPane {
         tabRobot.setText("Robot");
         tabRobot.setContent(robotPane());
 
-        tabs.getTabs().addAll(tabDPID, tabPPID, tabTPID, tabObstacle, tabRobot);
+        tabs.getTabs().addAll(tabDPID, tabPPID, tabTPID, tabDifPID, tabObstacle, tabRobot);
 
         border.setCenter(tabs);
 
@@ -211,6 +226,49 @@ public class SettingsPane {
         label = new Label("KD:");
         grid.add(label, 0, rowIdx);
         grid.add(p_kdField, 1, rowIdx);
+
+        return grid;
+    }
+
+
+    private Pane DifferencialPIDPane() {
+
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER); // Override default
+        grid.setHgap(10);
+        grid.setVgap(12);
+
+        // Use column constraints to set properties for columns in the grid
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setHalignment(HPos.RIGHT); // Override default
+        grid.getColumnConstraints().add(column1);
+
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHalignment(HPos.LEFT); // Override default
+        grid.getColumnConstraints().add(column2);
+
+        dif_kpField = new TextField();
+        dif_kiField = new TextField();
+        dif_kdField = new TextField();
+
+        int rowIdx = 0;
+        Label label = new Label("PID parameters for position    ");
+        grid.add(label, 0, 0, 2, 2);
+
+        rowIdx += 2;
+        label = new Label("KP:");
+        grid.add(label, 0, rowIdx);
+        grid.add(dif_kpField, 1, rowIdx);
+
+        rowIdx++;
+        label = new Label("KI:");
+        grid.add(label, 0, rowIdx);
+        grid.add(dif_kiField, 1, rowIdx);
+
+        rowIdx++;
+        label = new Label("KD:");
+        grid.add(label, 0, rowIdx);
+        grid.add(dif_kdField, 1, rowIdx);
 
         return grid;
     }

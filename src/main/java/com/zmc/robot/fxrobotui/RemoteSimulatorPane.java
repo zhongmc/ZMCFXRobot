@@ -2,9 +2,11 @@ package com.zmc.robot.fxrobotui;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.sun.javafx.geom.Point2D;
+import com.zmc.robot.simulator.Settings;
 import com.zmc.robot.utils.SerialPortUtil;
 
 import org.apache.log4j.Logger;
@@ -38,12 +40,18 @@ import javafx.scene.layout.GridPane;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 
+import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Modality;
+
 public class RemoteSimulatorPane {
 
-    private RobotView robotView;
-    private ScenseView scenseView;
+    private final RobotView robotView;
+    private final ScenseView scenseView;
 
-    private BorderPane border;
+    private final BorderPane border;
 
     private Button homeButton;
     private Button startStopButton;
@@ -51,7 +59,7 @@ public class RemoteSimulatorPane {
     private Button closeButton;
     private Button refreshButton;
 
-    private CheckBox simulateModeCheckBox;
+    private CheckBox simulateModeCheckBox, simulateWithObstacleCheckBox;
     // private ToggleGroup commGroup;
 
     private ChoiceBox<String> commChoiceBox;
@@ -64,15 +72,28 @@ public class RemoteSimulatorPane {
     private String selectedCom;
 
     private boolean isGoing = false;
-    private double home_x = 0, home_y = 0, home_theta = (float) Math.PI / 4;
+    private double home_x = 0, home_y = 0;
+    private final double home_theta = (float) Math.PI / 4;
 
-    private Logger log = Logger.getLogger("Simulator");
+    private final Logger log = Logger.getLogger("Simulator");
+
+    private boolean simulateWithObstacle = false;
+
+    private final Settings m_settings = new Settings();
+
+    private final Stage mPrimaryStage;
+
+    private ProgressFrom mProgressFrom;
 
     public Pane getMainPane() {
         return border;
     }
 
-    public RemoteSimulatorPane() {
+    public RemoteSimulatorPane(final Stage primaryStage) {
+
+        mPrimaryStage = primaryStage;
+
+        // mProgressFrom = new ProgressFrom(null, primaryStage);
 
         border = new BorderPane();
         border.setPadding(new Insets(20, 0, 10, 5));
@@ -81,19 +102,19 @@ public class RemoteSimulatorPane {
         robotView.setObstacles(scenseView.getObstacles());
         robotView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
-            public void handle(MouseEvent t) {
+            public void handle(final MouseEvent t) {
 
                 if (t.getClickCount() == 1) {
                     // System.out.println("Single Click");
                     latestClickRunner = new ClickRunner(() -> {
-                        double x = t.getX();
-                        double y = t.getY();
+                        final double x = t.getX();
+                        final double y = t.getY();
                         robotView.setTarget(x, y);
 
-                        Point2D p = robotView.getTarget();
+                        final Point2D p = robotView.getTarget();
                         double angle = 0, v = 0.15;
 
-                        String angleStr = angleField.getText();
+                        final String angleStr = angleField.getText();
                         if (angleStr != null && !angleStr.isEmpty()) {
                             try {
 
@@ -106,18 +127,17 @@ public class RemoteSimulatorPane {
                                     angle = (in * Math.PI) / 180;
                                 }
 
-                            } catch (Exception e) {
+                            } catch (final Exception e) {
 
                             }
                         }
 
-                        String vStr = velocityField.getText();
+                        final String vStr = velocityField.getText();
                         if (vStr != null && !vStr.isEmpty()) {
                             v = Double.valueOf(vStr);
                         }
 
                         log.info("Set target to (x,y; v, angle):" + p.x + "," + p.y + ": " + v + "," + angle);
-
 
                         setRemoteGoal(p.x, p.y, angle, v);
 
@@ -132,12 +152,12 @@ public class RemoteSimulatorPane {
                         // System.out.println("-> Abort Single Click");
                         latestClickRunner.abort();
                     }
-                    double x = t.getX();
-                    double y = t.getY();
+                    final double x = t.getX();
+                    final double y = t.getY();
                     robotView.setRobotPosition(x, y);
                     scenseView.setRobotPosition(x, y);
 
-                    Point2D p = robotView.getRobotPosition();
+                    final Point2D p = robotView.getRobotPosition();
                     home_x = p.x;
                     home_y = p.y;
                     setRemoteRobotPosition(home_x, home_y, home_theta);
@@ -148,16 +168,16 @@ public class RemoteSimulatorPane {
             }
         });
 
-        StackPane stackPane = new StackPane();
+        final StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(scenseView, robotView);
 
-        ScrollPane s1 = new ScrollPane();
+        final ScrollPane s1 = new ScrollPane();
         // s1.setPrefSize(800, 600);
         s1.setContent(stackPane);
 
         border.setCenter(s1);
         // border.setRight(createLeftPane());
-        ScrollPane s2 = new ScrollPane();
+        final ScrollPane s2 = new ScrollPane();
         s2.setContent(createLeftPane());
         border.setRight(s2);
 
@@ -176,7 +196,7 @@ public class RemoteSimulatorPane {
         startStopButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         startStopButton.setMinWidth(Control.USE_PREF_SIZE);
 
-        VBox vbButtons = new VBox();
+        final VBox vbButtons = new VBox();
         vbButtons.setSpacing(10);
         vbButtons.setPadding(new Insets(0, 20, 10, 20));
 
@@ -196,18 +216,17 @@ public class RemoteSimulatorPane {
 
         });
 
-
-        GridPane grid = new GridPane();
+        final GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER); // Override default
         grid.setHgap(10);
         grid.setVgap(12);
 
         // Use column constraints to set properties for columns in the grid
-        ColumnConstraints column1 = new ColumnConstraints();
+        final ColumnConstraints column1 = new ColumnConstraints();
         column1.setHalignment(HPos.RIGHT); // Override default
         grid.getColumnConstraints().add(column1);
 
-        ColumnConstraints column2 = new ColumnConstraints();
+        final ColumnConstraints column2 = new ColumnConstraints();
         column2.setHalignment(HPos.LEFT); // Override default
         grid.getColumnConstraints().add(column2);
 
@@ -222,7 +241,7 @@ public class RemoteSimulatorPane {
         grid.add(angleField, 1, 1);
         vbButtons.getChildren().add(grid);
 
-        Slider slider = new Slider();
+        final Slider slider = new Slider();
         slider.setMin(50);
         slider.setMax(200);
         slider.setValue(100);
@@ -239,28 +258,56 @@ public class RemoteSimulatorPane {
 
         vbButtons.getChildren().add(scalingValue);
 
-        slider.valueProperty().addListener((ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
-            double scale = new_val.doubleValue();
-            zoomRobotView(scale);
-            double sv = slider.getValue();
-            System.out.println("Scale value:" + sv);
+        slider.valueProperty().addListener(
+                (final ObservableValue<? extends Number> ov, final Number old_val, final Number new_val) -> {
+                    final double scale = new_val.doubleValue();
+                    zoomRobotView(scale);
+                    final double sv = slider.getValue();
+                    System.out.println("Scale value:" + sv);
 
-            scalingValue.setText(String.format("%.2f", scale) + "%");
+                    scalingValue.setText(String.format("%.2f", scale) + "%");
+                });
+
+        final Button clearButton = new Button("Clear");
+        clearButton.setOnAction((ActionEvent) -> {
+            clear();
         });
+
+        final Button optionButton = new Button("Options");
+
+        optionButton.setOnAction((ActionEvent) -> {
+            // Settings settings = new Settings();
+            loadSettings();
+            // mProgressFrom.activateProgressBar();
+        });
+
+        final HBox hb11 = new HBox();
+        hb11.setSpacing(15);
+        hb11.getChildren().addAll(clearButton, optionButton);
+
+        vbButtons.getChildren().add(hb11);
 
         simulateModeCheckBox = new CheckBox();
         simulateModeCheckBox.setText("simulate mode");
 
-        simulateModeCheckBox.selectedProperty()
-                .addListener((ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) -> {
+        simulateModeCheckBox.selectedProperty().addListener(
+                (final ObservableValue<? extends Boolean> ov, final Boolean old_val, final Boolean new_val) -> {
                     setSimulateMode(new_val);
                 });
 
+        simulateWithObstacleCheckBox = new CheckBox();
+        simulateWithObstacleCheckBox.setText("Simulate with obstacle");
+        simulateWithObstacleCheckBox.selectedProperty().addListener(
+                (final ObservableValue<? extends Boolean> ov, final Boolean old_val, final Boolean new_val) -> {
+                    simulateWithObstacle = new_val;
+                });
+
         vbButtons.getChildren().add(simulateModeCheckBox);
+        vbButtons.getChildren().add(simulateWithObstacleCheckBox);
 
         vbButtons.getChildren().add(new Label("Comm port："));
 
-        String[] baundRates = new String[] { "115200", "57600", "56000", "43000", "38400", "19200", "9600" };
+        final String[] baundRates = new String[] { "115200", "57600", "56000", "43000", "38400", "19200", "9600" };
 
         commChoiceBox = new ChoiceBox<String>();
         listComm();
@@ -272,17 +319,17 @@ public class RemoteSimulatorPane {
         refreshButton = new Button("R");
         // commChoiceBox.setOn
 
-        refreshButton.setOnAction((ActionEvent e) -> {
+        refreshButton.setOnAction((final ActionEvent e) -> {
             listComm();
         });
 
-        commChoiceBox.getSelectionModel().selectedIndexProperty()
-                .addListener((ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
+        commChoiceBox.getSelectionModel().selectedIndexProperty().addListener(
+                (final ObservableValue<? extends Number> ov, final Number old_val, final Number new_val) -> {
                     selectedCom = comPorts.get(new_val.intValue());
                     enableButtons();
                     // connectToCom(selectedComm);
                 });
-        HBox hbox = new HBox();
+        final HBox hbox = new HBox();
 
         hbox.setSpacing(10);
         hbox.setPadding(new Insets(10, 5, 10, 5));
@@ -292,7 +339,7 @@ public class RemoteSimulatorPane {
         vbButtons.getChildren().add(hbox);
         vbButtons.getChildren().add(baundRateChouceBox);
 
-        HBox hbox1 = new HBox();
+        final HBox hbox1 = new HBox();
         hbox1.setSpacing(10);
         hbox1.setPadding(new Insets(10, 5, 10, 5));
 
@@ -302,25 +349,25 @@ public class RemoteSimulatorPane {
 
         vbButtons.getChildren().add(hbox1);
 
-        connectButton.setOnAction((ActionEvent e) -> {
+        connectButton.setOnAction((final ActionEvent e) -> {
             connectToCom(selectedCom);
         });
 
-        closeButton.setOnAction((ActionEvent e) -> {
+        closeButton.setOnAction((final ActionEvent e) -> {
             closeCom();
         });
 
         vbButtons.getChildren().add(new Label("Send com comand："));
 
         cmdField = new TextField();
-        cmdField.setOnKeyPressed((KeyEvent e) -> {
+        cmdField.setOnKeyPressed((final KeyEvent e) -> {
             if (e.getCode() == KeyCode.ENTER)
                 sendCmd(cmdField.getText());
         });
 
         vbButtons.getChildren().add(cmdField);
 
-        String tlpStr = "press ENTER to send!\n[gr;] get robot info.\n[od d1,d2,d3,d4,d5;]IR distance(*1000).\n[st;]Stop robot.\n[ci;] count info.\n[mm pwm;]start moto 1 sec.\n[sr pwm;]Step response.\n[sp pwm0,pwm1,step;]speed test.\n[pi kp,ki,kd;]PID param.\n[tl +-pwm;]turn around test +left -right.\n[mg x,y;]goto goal test.\n[sm 0/1;]simulate mode.\n[io 0/1;]ignore obstacle mode.\n[rs;]Reset robot.";
+        final String tlpStr = "press ENTER to send!\n[gr;] get robot info.\n[od d1,d2,d3,d4,d5;]IR distance(*1000).\n[st;]Stop robot.\n[ci;] count info.\n[mm pwm;]start moto 1 sec.\n[sr pwm;]Step response.\n[sp pwm0,pwm1,step;]speed test.\n[pi kp,ki,kd;]PID param.\n[tl +-pwm;]turn around test +left -right.\n[mg x,y;]goto goal test.\n[sm 0/1;]simulate mode.\n[io 0/1;]ignore obstacle mode.\n[rs;]Reset robot.";
         // Tooltip t = new Tooltip(tlpStr);
         // Tooltip.install(cmdField, t);
 
@@ -331,7 +378,7 @@ public class RemoteSimulatorPane {
         return vbButtons;
     }
 
-    private void zoomRobotView(double scale) {
+    private void zoomRobotView(final double scale) {
         robotView.setScale(scale);
         scenseView.setScale(scale);
     }
@@ -339,7 +386,7 @@ public class RemoteSimulatorPane {
     private List<String> comPorts;
 
     private void listComm() {
-        List<String> its = commChoiceBox.getItems();
+        final List<String> its = commChoiceBox.getItems();
 
         commChoiceBox.getItems().removeAll(its);
 
@@ -347,7 +394,7 @@ public class RemoteSimulatorPane {
         if (comPorts.isEmpty()) {
             commChoiceBox.getItems().add("No device found!");
         } else {
-            for (String port : comPorts) {
+            for (final String port : comPorts) {
                 commChoiceBox.getItems().add(port);
             }
         }
@@ -382,10 +429,10 @@ public class RemoteSimulatorPane {
 
     }
 
-    private SerialPortEventListener serialListener = new SerialPortEventListener() {
+    private final SerialPortEventListener serialListener = new SerialPortEventListener() {
 
         @Override
-        public void serialEvent(SerialPortEvent event) {
+        public void serialEvent(final SerialPortEvent event) {
             switch (event.getEventType()) {
             case SerialPortEvent.BI:/* Break interrupt */
             case SerialPortEvent.OE:/* Overrun error */
@@ -418,6 +465,10 @@ public class RemoteSimulatorPane {
         }
     }
 
+    private void clear() {
+        scenseView.invalidate();
+    }
+
     private void stopRobot() {
         startStopButton.setText("Go");
         sendCmd("st;");
@@ -432,7 +483,7 @@ public class RemoteSimulatorPane {
         setRemoteRobotPosition(home_x, home_y, home_theta);
     }
 
-    private void setSimulateMode(boolean value) {
+    private void setSimulateMode(final boolean value) {
         log.info("Set simulate mode: " + value);
         String cmdStr = "sm";
         if (value)
@@ -443,7 +494,7 @@ public class RemoteSimulatorPane {
         sendCmd(cmdStr);
     }
 
-    private void setRemoteGoal(double x, double y, double angle, double v) {
+    private void setRemoteGoal(final double x, final double y, final double angle, final double v) {
         // todo
         int intv;
         intv = (int) (x * 1000.0);
@@ -452,14 +503,14 @@ public class RemoteSimulatorPane {
         cmdStr = cmdStr + intv + ",";
         intv = (int) (angle * 1000);
         cmdStr = cmdStr + intv + ",";
-        intv = (int)(v * 1000);
+        intv = (int) (v * 1000);
         cmdStr = cmdStr + intv + ";";
 
         this.sendCmd(cmdStr);
 
     }
 
-    private void setRemoteRobotPosition(double x, double y, double angle) {
+    private void setRemoteRobotPosition(final double x, final double y, final double angle) {
         // todo
         int intv;
         intv = (int) (x * 1000.0);
@@ -475,27 +526,28 @@ public class RemoteSimulatorPane {
 
     private void setRemoteObDistance() {
 
-        double[] distances = robotView.getIrDistances();
+        final double[] distances = robotView.getIrDistances();
         String cmdStr = "od";
         for (int i = 0; i < 5; i++) {
-            int intv = (int) (distances[i] * 1000);
+            final int intv = (int) (distances[i] * 1000);
             cmdStr = cmdStr + intv + ",";
         }
 
         cmdStr = cmdStr + ";";
 
-        sendCmd(cmdStr);
+        if (simulateWithObstacle)
+            sendCmd(cmdStr);
 
     }
 
-    private byte[] comBuffer = new byte[1024];
+    private final byte[] comBuffer = new byte[1024];
     private int bufOff = 0;
 
     private void dataAvailable() {
-        InputStream inputStream = serialPortUtil.getInputStream();
+        final InputStream inputStream = serialPortUtil.getInputStream();
         try {
             while (inputStream.available() > 0) {
-                int readByte = inputStream.read();
+                final int readByte = inputStream.read();
                 if (readByte == -1)
                     break;
 
@@ -513,72 +565,162 @@ public class RemoteSimulatorPane {
 
             }
 
-        } catch (Exception e) {
-            log.error("Failed to read com", e);
+        } catch (final Exception e) {
+            log.error("Failed to read com:" + e, e);
         }
 
     }
 
-    private void comDataReaded(byte[] buf, int len) {
+    private void comDataReaded(final byte[] buf, final int len) {
 
-        String strValue = new String(buf, 0, len);
+        final String strValue = new String(buf, 0, len);
         if (strValue.startsWith("RP")) // robot position x,y,Q,w,v (double * 10000)
         {
             // log.info(strValue);
-            int intVal;
-            int idx1, idx2;
-            idx1 = 2;
-            idx2 = strValue.indexOf(',', idx1);
-            String tmp = strValue.substring(idx1, idx2);
-
-            intVal = Integer.valueOf(tmp);
-            double x = (double) intVal / 1000;
-            idx1 = idx2 + 1;
-            idx2 = strValue.indexOf(',', idx1);
-            tmp = strValue.substring(idx1, idx2);
-            intVal = Integer.valueOf(tmp);
-            double y = (double) intVal / 1000;
-
-            idx1 = idx2 + 1;
-            idx2 = strValue.indexOf(',', idx1);
-            tmp = strValue.substring(idx1, idx2);
-            intVal = Integer.valueOf(tmp);
-            double theta = (double) intVal / 1000;
-
-            idx1 = idx2 + 1;
-            idx2 = strValue.indexOf(',', idx1);
-            tmp = strValue.substring(idx1, idx2);
-            intVal = Integer.valueOf(tmp);
-            double w = (double) intVal / 1000;
-
-            tmp = strValue.substring(idx2 + 1);
-            intVal = Integer.valueOf(tmp);
-            double v = (double) intVal / 1000;
-
-            Platform.runLater(() -> {
-                robotView.setRobotPosition(x, y, theta, v);
-                scenseView.setRobotPosition(x, y, theta, v); // draw trails
-            });
-
-            setRemoteObDistance();
-
+            positionDataReaded(strValue.substring(2));
+        } else if (strValue.startsWith("ROP")) {
+            settingsDataReaded(strValue.substring(3));
+        } else if (strValue.startsWith("PID")) {
+            pidSettingsDataReaded(strValue.substring(3));
         } else {
             if (len > 2)
                 log.info(strValue);
         }
     }
 
-    private void connectToCom(String comStr) {
+    private void settingsDataReaded(final String data) {
+        final String[] datas = data.split(",");
+        if (datas.length < 8) {
+            log.info("Settings data error: " + data);
+            return;
+        }
+
+        try {
+            m_settings.min_rpm = Integer.valueOf(datas[0]);
+            m_settings.max_rpm = Integer.valueOf(datas[1]);
+
+            m_settings.wheelRadius = Double.valueOf(datas[2]);
+            m_settings.wheelDistance = Double.valueOf(datas[3]);
+            m_settings.atObstacle = Double.valueOf(datas[4]);
+            m_settings.dfw = Double.valueOf(datas[5]);
+            m_settings.unsafe = Double.valueOf(datas[6]);
+            m_settings.max_w = Double.valueOf(datas[7].trim());
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+        // log("ROP%d,%d,%s,%s,%s,%s,%s\n", sett.min_rpm, sett.max_rpm,
+        // floatToStr(0, sett.radius),
+        // floatToStr(1, sett.length),
+
+        // floatToStr(2, sett.atObstacle),
+        // floatToStr(3, sett.dfw ),
+        // floatToStr(4, sett.unsafe ),
+        // floatToStr(5, sett.max_w )
+        // );
+
+    }
+
+    private void pidSettingsDataReaded(final String data) {
+
+        // log("PID1,%s,%s,%s\n", floatToStr(0, sett.kp),
+        // floatToStr(1, sett.ki),
+        // floatToStr(2, sett.kd));
+
+        final String[] datas = data.split(",");
+        if (datas.length < 4) {
+            log.info("Settings data error: " + data);
+            return;
+        }
+
+        final int type = Integer.parseInt(datas[0]);
+
+        double p, i, d;
+        try {
+            p = Double.parseDouble(datas[1]);
+            i = Double.parseDouble(datas[2]);
+            d = Double.parseDouble(datas[3].trim());
+        } catch (final Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        switch (type) {
+
+        case 1:
+            m_settings.kp = p;
+            m_settings.ki = i;
+            m_settings.kd = d;
+            break;
+        case 2:
+            m_settings.pkp = p;
+            m_settings.pki = i;
+            m_settings.pkd = d;
+            break;
+        case 3:
+            m_settings.tkp = p;
+            m_settings.tki = i;
+            m_settings.tkd = d;
+            break;
+        case 4:
+            m_settings.dkp = p;
+            m_settings.dki = i;
+            m_settings.dkd = d;
+
+            // startOptionDialog();
+            Platform.runLater(optionDialogHandler);
+            break;
+        }
+
+    }
+
+    private void positionDataReaded(final String strValue) {
+
+        // log("RP%d,%d,%d,%d,%d\n",
+        // (int)(1000 * pos.x),
+        // (int)(1000 * pos.y),
+        // (int)(1000 * pos.theta),
+        // (int)(1000 * 0), w
+        // (int)(1000 * 0)); v
+
+        final String[] datas = strValue.split(",");
+
+        double x, y, theta, w, v;
+        if (datas.length < 5)
+            return;
+
+        x = (double) Integer.valueOf(datas[0]) / 1000.0;
+        y = (double) Integer.valueOf(datas[1]) / 1000.0;
+        theta = (double) Integer.valueOf(datas[2]) / 1000.0;
+        w = (double) Integer.valueOf(datas[3]) / 1000.0;
+        v = (double) Integer.valueOf(datas[4]) / 1000.0;
+
+        Platform.runLater(() -> {
+            robotView.setRobotPosition(x, y, theta, v);
+            scenseView.setRobotPosition(x, y, theta, v); // draw trails
+        });
+
+        setRemoteObDistance();
+    }
+
+    private void connectToCom(final String comStr) {
         if (comStr.startsWith("COM")) {
             String portName;
-            int idx = comStr.indexOf(',');
+            final int idx = comStr.indexOf(',');
             portName = comStr.substring(0, idx);
             log.info("Try to connect to com: " + portName);
             try {
                 serialPortUtil = SerialPortUtil.openPort(portName);
                 serialPortUtil.setSerialPortEventListener(serialListener);
                 enableButtons();
-            } catch (Exception e) {
+                // try{
+                // Thread.currentThread().sleep(100);
+                // }catch(Exception e)
+                // {
+
+                // }
+
+                // loadSettings();
+
+            } catch (final Exception e) {
                 log.error("failed to open com port: " + comStr, e);
             }
         }
@@ -593,14 +735,14 @@ public class RemoteSimulatorPane {
         }
     }
 
-    private void sendCmd(String cmdStr) {
+    private void sendCmd(final String cmdStr) {
         if (serialPortUtil == null)
             return;
 
         // log.info("Send cmd:" + cmdStr);
         try {
             serialPortUtil.write(cmdStr);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("failed to write com!", e);
         }
     }
@@ -613,7 +755,7 @@ public class RemoteSimulatorPane {
         private final Runnable onSingleClick;
         private boolean aborted = false;
 
-        public ClickRunner(Runnable onSingleClick) {
+        public ClickRunner(final Runnable onSingleClick) {
             this.onSingleClick = onSingleClick;
         }
 
@@ -624,7 +766,7 @@ public class RemoteSimulatorPane {
         public void run() {
             try {
                 Thread.sleep(SINGLE_CLICK_DELAY);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 e.printStackTrace();
             }
             if (!aborted) {
@@ -638,6 +780,149 @@ public class RemoteSimulatorPane {
         // mStopTimer = true;
         log.info("required to stop...");
         closeCom();
+    }
+
+    private void sendSettings() {
+        // sett.min_rpm = atoi( ptrs[0]);
+        // sett.max_rpm = atoi(ptrs[1]);
+        // sett.radius = atof( ptrs[2] );
+        // sett.length = atof( ptrs[3] );
+        // sett.atObstacle = atof( ptrs[4] );
+        // sett.dfw = atof( ptrs[5] );
+        // sett.unsafe = atof( ptrs[6] );
+        // sett.max_w = atof( ptrs[7] );
+
+        String cmd = String.format("sr%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n", m_settings.min_rpm, m_settings.max_rpm,
+                m_settings.wheelRadius, m_settings.wheelDistance, m_settings.atObstacle, m_settings.dfw,
+                m_settings.unsafe, m_settings.max_w);
+        sendCmd(cmd);
+
+        log.info(cmd);
+
+        cmd = String.format("pi1%.4f,%.4f%.4f\n", m_settings.kp, m_settings.ki, m_settings.kd);
+
+        sendCmd(cmd);
+        log.info(cmd);
+
+        cmd = String.format("pi2%.4f,%.4f%.4f\n", m_settings.pkp, m_settings.pki, m_settings.pkd);
+
+        sendCmd(cmd);
+        log.info(cmd);
+
+        cmd = String.format("pi3%.4f,%.4f%.4f\n", m_settings.tkp, m_settings.tki, m_settings.tkd);
+
+        sendCmd(cmd);
+        log.info(cmd);
+
+        cmd = String.format("pi4%.4f,%.4f%.4f\n", m_settings.dkp, m_settings.dki, m_settings.dkd);
+
+        sendCmd(cmd);
+        log.info(cmd);
+
+    }
+
+
+    private void loadSettings() {
+
+        Alert mAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        mAlert.setTitle("Please wait...");
+        mAlert.setHeaderText("Loading settings, please wait...");
+        mAlert.setContentText(" press cancel to cancel.");
+        mAlert.initOwner(mPrimaryStage);
+        // mAlert.initModality(Modality.NONE); //Modality.APPLICATION_MODAL
+
+        optionDialogHandler.mAlert = mAlert;
+        optionDialogHandler.timeOut = false;
+        optionDialogHandler.settingsOk = false;
+
+        sendCmd("si;\n");
+
+        // ButtonType buttonTypeOne = new ButtonType("OK");
+        final ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        mAlert.getButtonTypes().setAll(buttonTypeCancel);
+
+        TimmerHandler handle  = new TimmerHandler( mAlert );
+        Thread thread = new Thread(handle);
+        thread.start();
+        final Optional<ButtonType> ret = mAlert.showAndWait();
+        // if (ret.get() == buttonTypeCancel)
+        //     return;
+        
+        if( optionDialogHandler.timeOut )  //time out....
+            return;
+
+        if( !optionDialogHandler.settingsOk ) //click cancel ????
+            return;
+
+
+        log.info("Start Option....");
+        startOptionDialog();
+    }
+
+    private void startOptionDialog() {
+
+        final SettingsDialog dialog = new SettingsDialog(m_settings);
+        final boolean ret = dialog.showAndWait();
+        if (ret) {
+            sendSettings();
+        }
+
+    }
+
+    class OptionDialogHandler implements Runnable{
+        
+        Alert mAlert;
+        boolean timeOut = false;
+        boolean settingsOk = false;
+
+        @Override
+        public void run() {
+            synchronized( this )
+            {
+                if( mAlert == null )
+                    return;
+            }
+            if(settingsOk )
+                log.info("Load settings finished...");
+            if( timeOut )
+                log.info("load settings time out.");
+
+                //close the alert dialog
+            for (final ButtonType bt : mAlert.getDialogPane().getButtonTypes()) {
+                if (bt.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE) {
+                    final Button cancelButton = (Button) mAlert.getDialogPane().lookupButton(bt);
+                    cancelButton.fire();
+                    break;
+                }
+            }
+            
+            mAlert.close();
+            mAlert = null;
+        }
+    }
+
+    private OptionDialogHandler optionDialogHandler = new OptionDialogHandler();
+
+    class TimmerHandler implements Runnable{
+
+        Alert mAlert = null;
+        public TimmerHandler(Alert alert)
+        {
+            mAlert = alert;
+        }
+        @Override
+        public void run() {
+            try {
+                 Thread.sleep(2000);
+                // Thread.currentThread().wait(2000);
+            } catch (final Exception e)
+            {
+
+            }
+            optionDialogHandler.timeOut = true;
+            Platform.runLater(optionDialogHandler);
+
+        }
     }
 
 }

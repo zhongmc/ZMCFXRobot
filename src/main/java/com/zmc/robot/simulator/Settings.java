@@ -15,16 +15,19 @@ public class Settings {
 	public double kp, ki, kd;
 
 	public double pkp, tkp, pki, tki, pkd, tkd;
+	public double dkp,dki,dkd;
+
 
 	public double atObstacle, unsafe;
 	public double dfw;
 	public double velocity;
 	public int max_rpm, min_rpm;
 
+	public double max_w;
+	
 	public double wheelDistance, wheelRadius;
 
 	public int pwm_diff;
-
 	public int max_pwm;
 
 	public int pwm_zero;
@@ -299,6 +302,10 @@ public class Settings {
 			tkp = s.tkp;
 			tki = s.tki;
 			tkd = s.tkd;
+			
+			dkp = s.dkp;
+			dki = s.dki;
+			dkd = s.dkd;
 
 		}
 	}

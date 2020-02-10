@@ -132,6 +132,7 @@ public class Supervisor {
 			m_state = S_GTG;
 			m_currentController = m_GoToGoal;
 			m_GoToGoal.reset();
+			m_DiffCtrl.reset();
 			d_prog = 100;
 			counter = 0;
 		}
@@ -804,28 +805,34 @@ public class Supervisor {
 
 		IRSensor[] irSensors = robot.getIRSensors();
 
-		boolean ofObstacle = true;
-		if (at_obstacle) {
-			irDistance = 100;
-			double offDis = 4 * IRSensor.maxDistance / 5;
-			for (int i = 1; i < 4; i++) {
-				if (irSensors[i].distance < offDis) //
-					ofObstacle = false;
-				if (irDistance > irSensors[i].distance)
-					irDistance = irSensors[i].distance;
-			}
+		at_obstacle = false;
+	if( irSensors[2].distance < d_at_obs )
+		at_obstacle = true;
+	  else if( irSensors[1].distance < d_fw || irSensors[3].distance < d_fw )
+		at_obstacle = true;
+	
+		// boolean ofObstacle = true;
+		// if (at_obstacle) {
+		// 	irDistance = 100;
+		// 	double offDis = 4 * IRSensor.maxDistance / 5;
+		// 	for (int i = 1; i < 4; i++) {
+		// 		if (irSensors[i].distance < offDis) //
+		// 			ofObstacle = false;
+		// 		if (irDistance > irSensors[i].distance)
+		// 			irDistance = irSensors[i].distance;
+		// 	}
 
-			at_obstacle = !ofObstacle;
-		} else {
-			at_obstacle = false;
-			irDistance = 100;
-			for (int i = 1; i < 4; i++) {
-				if (irSensors[i].distance < d_at_obs)
-					at_obstacle = true;
-				if (irDistance > irSensors[i].distance)
-					irDistance = irSensors[i].distance;
-			}
-		}
+		// 	at_obstacle = !ofObstacle;
+		// } else {
+		// 	at_obstacle = false;
+		// 	irDistance = 100;
+		// 	for (int i = 1; i < 4; i++) {
+		// 		if (irSensors[i].distance < d_at_obs)
+		// 			at_obstacle = true;
+		// 		if (irDistance > irSensors[i].distance)
+		// 			irDistance = irSensors[i].distance;
+		// 	}
+		// }
 		unsafe = false;
 		if (irSensors[1].distance < d_unsafe || irSensors[2].distance < d_unsafe || irSensors[3].distance < d_unsafe)
 			unsafe = true;

@@ -15,13 +15,18 @@ public class RearDriveRobot extends AbstractRobot {
 		settings.ki = 0.05; //// 0.8; // 0.1; //0.01;
 		settings.kd = 0.0; // 0.1;
 
-		settings.pkp = 0.4;//5;
-		settings.pki = 0.6;//0.1
-		settings.pkd = 0.001;
+		settings.pkp = 1.5;//5;
+		settings.pki = 0.01;//0.1
+		settings.pkd = 0.00;
 
-		settings.tkp = 10;
-		settings.tki = 0.2;
-		settings.tkd = 0.1;
+		settings.tkp = 1.20;
+		settings.tki = 0.1;
+		settings.tkd = 0;
+
+		settings.dkp = 0.4;
+		settings.dki = 0.6;
+		settings.dkd = 0.001;
+	  
 
 		settings.atObstacle = 0.3; // 0.15; //0.12;// 0.25; 0.2
 		settings.unsafe = 0.05; // 0.05; // 0.05

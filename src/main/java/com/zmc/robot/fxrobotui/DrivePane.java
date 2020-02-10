@@ -324,10 +324,6 @@ public class DrivePane implements Runnable {
 
         });
 
-        clearButton = new Button("Clear");
-        clearButton.setOnAction((ActionEvent) -> {
-            clear();
-        });
 
         Slider slider = new Slider();
         slider.setMin(50);
@@ -346,6 +342,11 @@ public class DrivePane implements Runnable {
             double scale = new_val.doubleValue();
             zoomRobotView(scale);
             // scalingValue.setText(String.format("%.2f", scale) + "%");
+        });
+
+        clearButton = new Button("Clear");
+        clearButton.setOnAction((ActionEvent) -> {
+            clear();
         });
 
         Button optionButton = new Button("Options");
@@ -635,7 +636,10 @@ public class DrivePane implements Runnable {
         isPause = true;
         isGoing = false;
         startStopButton.setText("Go");
+
         // supervisor.reset();
+//copy robot state
+        driveSupervisor.reset();
 
     }
 
@@ -662,7 +666,7 @@ public class DrivePane implements Runnable {
         supervisor.setIrDistances(irDistances);
 
         supervisor.reset();
-        // driveSupervisor.reset();
+        driveSupervisor.reset();
         isPause = false;
     }
 

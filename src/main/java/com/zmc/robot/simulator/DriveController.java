@@ -154,6 +154,14 @@ public class DriveController extends Controller {
 		return output;
 	}
 
+
+	void reset(AbstractRobot robot )
+	{
+		lastError = 0;
+		lastErrorIntegration = 0;
+		mTheta = robot.theta;
+	}
+
 	@Override
 	void reset() {
 		lastError = 0;

@@ -102,10 +102,10 @@ public class GotoGoalWithV extends Controller {
 		if (state == 0 || state == 1) { // dir
 			double p = Kp;
 
-			if (Math.abs(e) > 2)
-				p = p / 3;
-			else if (Math.abs(e) > 1)
-				p = p / 2;
+			// if (Math.abs(e) > 2)
+			// 	p = p / 3;
+			// else if (Math.abs(e) > 1)
+			// 	p = p / 2;
 
 			if (Math.abs(e) > 1) {
 				e_I = 0;
@@ -125,34 +125,33 @@ public class GotoGoalWithV extends Controller {
 		// } else
 
 		if (state == 1) { // distance
-			ve = d;
-			vei = lastVEI + ve * dt;
-			ved = (ve - lastVE) / dt;
-			output.v = pkp * ve + pki * vei + pkd * ved; //
-			if (output.v > input.v)
-				output.v = input.v; ///////
-			// output.w = 0;
-			// log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
-			lastVEI = vei;
-			lastVE = ve;
+
+			output.v = d*(input.v - 0.05)/0.3 + 0.05;
+
+			// ve = d;
+			// vei = lastVEI + ve * dt;
+			// ved = (ve - lastVE) / dt;
+			// output.v = pkp * ve + pki * vei + pkd * ved; //
+			// if (output.v > input.v)
+			// 	output.v = input.v; ///////
+			// // output.w = 0;
+			// // log.info(String.format("D: %.3f, %.3f, %.3f", d, w, output.v));
+			// lastVEI = vei;
+			// lastVE = ve;
 		} else if (state == 2) { // theta
 			double p = tkp;
-
-			if (Math.abs(e) > 2)
-				p = p / 3;
-			else if (Math.abs(e) > 1)
-				p = p / 2;
-
+			// if (Math.abs(e) > 2)
+			// 	p = p / 3;
+			// else if (Math.abs(e) > 1)
+			// 	p = p / 2;
 			if (Math.abs(e) > 1) {
 				e_I = 0;
 			} else
 				e_I = lastErrorIntegration + e * dt;
-
 			w = p * e + tki * e_I + tkd * e_D;
 			// log.info(String.format("T: %.3f, %.3f, %.3f, %.3f, %.1f, %.1f", d, e, w,
 			// robot.theta, robot.m_left_ticks,
 			// robot.m_right_ticks));
-
 			lastErrorIntegration = e_I;
 			lastError = e;
 

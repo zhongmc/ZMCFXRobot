@@ -43,7 +43,7 @@ public class ZMCFXRobot extends Application {
         TabPane tabs = new TabPane();
 
         // localSimulatorPane = new LocalSimulatorPane();
-        remoteSimulatorPane = new RemoteSimulatorPane();
+        remoteSimulatorPane = new RemoteSimulatorPane(primaryStage);
         balancePane = new BalanceRobotPane();
         drivePane = new DrivePane();
 
