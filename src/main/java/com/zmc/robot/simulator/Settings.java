@@ -29,12 +29,13 @@ public class Settings {
 
 	public int pwm_diff;
 	public int max_pwm;
-
 	public int pwm_zero;
 	public double angleOff;
-
 	public double wheelSyncKP;
 
+	public int sampleTime;
+
+	
 	private byte[] encodedData = new byte[18];
 
 	public void decodeWithSettingsType(byte[] data) {

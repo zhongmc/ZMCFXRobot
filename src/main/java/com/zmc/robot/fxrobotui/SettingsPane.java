@@ -25,7 +25,7 @@ public class SettingsPane {
     private TextField dif_kpField, dif_kiField, dif_kdField;
 
     private TextField atObstacleField, unsafeField, followWallField;
-    private TextField velocityField, maxRPMField, minRPMField, radiusField, wheelDistanceField;
+    private TextField velocityField, maxRPMField, minRPMField, radiusField, wheelDistanceField, sampleTimeField;
     private final Button btnApply = new Button("Apply");
     private final Button btnReset = new Button("Reset");
     private Settings mSettings;
@@ -62,6 +62,8 @@ public class SettingsPane {
         unsafeField.setText(String.format("%.3f", settings.unsafe));
         followWallField.setText(String.format("%.3f", settings.dfw));
 
+        sampleTimeField.setText(String.valueOf( settings.sampleTime ));
+
         velocityField.setText(String.format("%.3f", settings.velocity));
         maxRPMField.setText(String.format("%d", settings.max_rpm));
         minRPMField.setText(String.format("%d", settings.min_rpm));
@@ -82,14 +84,15 @@ public class SettingsPane {
         mSettings.tki = Double.valueOf(t_kiField.getText());
         mSettings.tkd = Double.valueOf(t_kdField.getText());
 
-        mSettings.dkp = Double.valueOf(d_kpField.getText());
-        mSettings.dki = Double.valueOf(d_kiField.getText());
-        mSettings.dkd = Double.valueOf(d_kdField.getText());
+        mSettings.dkp = Double.valueOf(dif_kpField.getText());
+        mSettings.dki = Double.valueOf(dif_kiField.getText());
+        mSettings.dkd = Double.valueOf(dif_kdField.getText());
 
         mSettings.atObstacle = Double.valueOf(atObstacleField.getText());
         mSettings.unsafe = Double.valueOf(unsafeField.getText());
         mSettings.dfw = Double.valueOf(followWallField.getText());
 
+        mSettings.sampleTime = Integer.valueOf( sampleTimeField.getText());
         mSettings.velocity = Double.valueOf(velocityField.getText());
         mSettings.max_rpm = Integer.valueOf(maxRPMField.getText());
         mSettings.min_rpm = Integer.valueOf(minRPMField.getText());
@@ -379,6 +382,8 @@ public class SettingsPane {
         column2.setHalignment(HPos.LEFT); // Override default
         grid.getColumnConstraints().add(column2);
 
+        sampleTimeField = new TextField();
+
         velocityField = new TextField();
 
         maxRPMField = new TextField();
@@ -394,6 +399,13 @@ public class SettingsPane {
         grid.add(label, 0, rowIdx, 2, 2);
 
         rowIdx += 2;
+
+        label = new Label("Sample Time:");
+        grid.add( label, 0, rowIdx );
+        grid.add( sampleTimeField, 1, rowIdx);
+
+        rowIdx++;
+
         label = new Label("Velocity:");
         grid.add(label, 0, rowIdx);
         grid.add(velocityField, 1, rowIdx);

@@ -82,6 +82,8 @@ public class DrivePane implements Runnable {
 
     private int mMode = 0;
 
+    private int sampleTime = 100; //ms
+
     private Logger log = Logger.getLogger("Local");
 
     private Thread timmerThread = null; // = new Thread(this );
@@ -293,6 +295,8 @@ public class DrivePane implements Runnable {
 
         Settings settings = robot.getSettings();
 
+        sampleTime = settings.sampleTime;
+
         velocityField = new TextField(String.valueOf(settings.velocity));
         Label label = new Label("Velocity:");
         grid.add(label, 0, 0);
@@ -369,6 +373,8 @@ public class DrivePane implements Runnable {
             if (ret) {
                 driveSupervisor.updateSettings(settings);
                 supervisor.updateSettings(settings);
+
+                sampleTime = settings.sampleTime;
             }
         });
 
@@ -684,7 +690,7 @@ public class DrivePane implements Runnable {
 
             try {
 
-                Thread.sleep(100);
+                Thread.sleep( sampleTime );
                 Platform.runLater(timmerHandler);
             } catch (Exception e) {
 
@@ -698,7 +704,7 @@ public class DrivePane implements Runnable {
         public void run() {
             if (isGoing && !supervisor.atGoal()) {
 
-                supervisor.execute(0, 0, 0.1);
+                supervisor.execute(0, 0, (double)sampleTime/1000.0);
                 RobotState state = supervisor.getRobotState();
                 robotView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
                 scenseView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
@@ -711,7 +717,7 @@ public class DrivePane implements Runnable {
             }
 
             if (mSpeed != 0 || mTheta != 0) {
-                driveSupervisor.execute(0, 0, 0.1);
+                driveSupervisor.execute(0, 0, (double)sampleTime/1000.0);
                 RobotState state = driveSupervisor.getRobotState();
                 robotView.setRobotPosition(state.x, state.y, state.theta, state.velocity);
                 scenseView.setRobotPosition(state.x, state.y, state.theta, state.velocity);

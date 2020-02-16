@@ -48,6 +48,8 @@ public class RearDriveRobot extends AbstractRobot {
 		settings.wheelRadius = wheel_radius;
 		settings.wheelDistance = wheel_base_length;
 
+		settings.sampleTime = 100; //100 ms 
+		
 		ticks_per_rev_l = 990;
 		ticks_per_rev_r = 990;
 

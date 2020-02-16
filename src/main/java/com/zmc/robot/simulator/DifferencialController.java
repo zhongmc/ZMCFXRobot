@@ -35,7 +35,7 @@ public class DifferencialController extends Controller {
 		if( sv != 0 )  //拐弯减速
 		{
 		  double av = Math.abs(sv);
-		  av = ((0.05 - av)/max_w )* Math.abs(sw) + av;
+		  av = ((0.1 - av)/max_w )* Math.abs(sw) + av;
 		  if( sv < 0  )
 			av = -av;
 		  sv = av;

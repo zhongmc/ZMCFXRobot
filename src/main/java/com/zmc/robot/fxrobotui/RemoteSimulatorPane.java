@@ -1,6 +1,7 @@
 package com.zmc.robot.fxrobotui;
 
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -76,6 +77,7 @@ public class RemoteSimulatorPane {
     private final double home_theta = (float) Math.PI / 4;
 
     private final Logger log = Logger.getLogger("Simulator");
+    private final Logger logRemote = Logger.getLogger("Remote");
 
     private boolean simulateWithObstacle = false;
 
@@ -292,14 +294,20 @@ public class RemoteSimulatorPane {
 
         simulateModeCheckBox.selectedProperty().addListener(
                 (final ObservableValue<? extends Boolean> ov, final Boolean old_val, final Boolean new_val) -> {
-                    setSimulateMode(new_val);
+                    if( new_val )
+                        setSimulateMode(1);
+                    else setSimulateMode(0);
                 });
 
         simulateWithObstacleCheckBox = new CheckBox();
         simulateWithObstacleCheckBox.setText("Simulate with obstacle");
         simulateWithObstacleCheckBox.selectedProperty().addListener(
                 (final ObservableValue<? extends Boolean> ov, final Boolean old_val, final Boolean new_val) -> {
-                    simulateWithObstacle = new_val;
+                    if( new_val)
+                        setSimulateMode(2);
+                    else
+                        setSimulateMode(0);
+                    // simulateWithObstacle = new_val;
                 });
 
         vbButtons.getChildren().add(simulateModeCheckBox);
@@ -416,6 +424,7 @@ public class RemoteSimulatorPane {
             closeButton.setDisable(false);
             cmdField.setDisable(false);
             simulateModeCheckBox.setDisable(false);
+            simulateWithObstacleCheckBox.setDisable( false );
 
         } else {
             simulateModeCheckBox.setDisable(true);
@@ -424,6 +433,8 @@ public class RemoteSimulatorPane {
             // connectButton.setDisable(true);
             closeButton.setDisable(true);
             cmdField.setDisable(true);
+
+            simulateWithObstacleCheckBox.setDisable(true);
 
         }
 
@@ -483,58 +494,52 @@ public class RemoteSimulatorPane {
         setRemoteRobotPosition(home_x, home_y, home_theta);
     }
 
-    private void setSimulateMode(final boolean value) {
+    private void setSimulateMode(int value) {
         log.info("Set simulate mode: " + value);
-        String cmdStr = "sm";
-        if (value)
-            cmdStr = cmdStr + "1;";
+        String cmdStr = "sm" + value + ";";
+        if( value == 2)
+            simulateWithObstacle = true;
         else
-            cmdStr = cmdStr + "0;";
-
+        simulateWithObstacle = false;
         sendCmd(cmdStr);
     }
 
     private void setRemoteGoal(final double x, final double y, final double angle, final double v) {
-        // todo
-        int intv;
-        intv = (int) (x * 1000.0);
-        String cmdStr = "gg" + intv + ",";
-        intv = (int) (y * 1000);
-        cmdStr = cmdStr + intv + ",";
-        intv = (int) (angle * 1000);
-        cmdStr = cmdStr + intv + ",";
-        intv = (int) (v * 1000);
-        cmdStr = cmdStr + intv + ";";
 
-        this.sendCmd(cmdStr);
+        DecimalFormat fmt = new DecimalFormat("0.####");
+        String cmdStr = String.format("gg%s,%s,%s,%s;", 
+                fmt.format(x),
+                fmt.format(y),
+                fmt.format(angle),
+                fmt.format(v));
+        sendCmd( cmdStr );
+        log.info(cmdStr );
 
     }
 
     private void setRemoteRobotPosition(final double x, final double y, final double angle) {
-        // todo
-        int intv;
-        intv = (int) (x * 1000.0);
-        String cmdStr = "rp" + intv + ",";
-        intv = (int) (y * 1000);
-        cmdStr = cmdStr + intv + ",";
-        intv = (int) (angle * 1000);
-        cmdStr = cmdStr + intv + ";";
-        this.sendCmd(cmdStr);
 
+        DecimalFormat fmt = new DecimalFormat("0.####");
+        String cmdStr = String.format("rp%s,%s,%s;", 
+                fmt.format(x),
+                fmt.format(y),
+                fmt.format(angle));
+        sendCmd( cmdStr );
+        log.info(cmdStr );
         setRemoteObDistance();
     }
 
     private void setRemoteObDistance() {
-
+        if (!simulateWithObstacle)
+            return;
+            
+        DecimalFormat fmt = new DecimalFormat("0.####");
         final double[] distances = robotView.getIrDistances();
         String cmdStr = "od";
         for (int i = 0; i < 5; i++) {
-            final int intv = (int) (distances[i] * 1000);
-            cmdStr = cmdStr + intv + ",";
+            cmdStr = cmdStr + fmt.format(distances[i]) + ",";
         }
-
         cmdStr = cmdStr + ";";
-
         if (simulateWithObstacle)
             sendCmd(cmdStr);
 
@@ -582,9 +587,18 @@ public class RemoteSimulatorPane {
             settingsDataReaded(strValue.substring(3));
         } else if (strValue.startsWith("PID")) {
             pidSettingsDataReaded(strValue.substring(3));
-        } else {
+        } else if( strValue.startsWith("READY")){
+            sendCmd("cr;");
+        }
+        else if( strValue.startsWith("RD") 
+            ||strValue.startsWith("IR")
+            || strValue.startsWith("IM") )
+            {
+                return;
+            } 
+        else {
             if (len > 2)
-                log.info(strValue);
+            logRemote.info(strValue);
         }
     }
 
@@ -596,15 +610,16 @@ public class RemoteSimulatorPane {
         }
 
         try {
-            m_settings.min_rpm = Integer.valueOf(datas[0]);
-            m_settings.max_rpm = Integer.valueOf(datas[1]);
+            m_settings.sampleTime = Integer.valueOf(datas[0]);
+            m_settings.min_rpm = Integer.valueOf(datas[1]);
+            m_settings.max_rpm = Integer.valueOf(datas[2]);
 
-            m_settings.wheelRadius = Double.valueOf(datas[2]);
-            m_settings.wheelDistance = Double.valueOf(datas[3]);
-            m_settings.atObstacle = Double.valueOf(datas[4]);
-            m_settings.dfw = Double.valueOf(datas[5]);
-            m_settings.unsafe = Double.valueOf(datas[6]);
-            m_settings.max_w = Double.valueOf(datas[7].trim());
+            m_settings.wheelRadius = Double.valueOf(datas[3]);
+            m_settings.wheelDistance = Double.valueOf(datas[4]);
+            m_settings.atObstacle = Double.valueOf(datas[5]);
+            m_settings.dfw = Double.valueOf(datas[6]);
+            m_settings.unsafe = Double.valueOf(datas[7]);
+            m_settings.max_w = Double.valueOf(datas[8].trim());
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -666,6 +681,8 @@ public class RemoteSimulatorPane {
             m_settings.dkd = d;
 
             // startOptionDialog();
+            optionDialogHandler.settingsOk = true;
+
             Platform.runLater(optionDialogHandler);
             break;
         }
@@ -687,11 +704,11 @@ public class RemoteSimulatorPane {
         if (datas.length < 5)
             return;
 
-        x = (double) Integer.valueOf(datas[0]) / 1000.0;
-        y = (double) Integer.valueOf(datas[1]) / 1000.0;
-        theta = (double) Integer.valueOf(datas[2]) / 1000.0;
-        w = (double) Integer.valueOf(datas[3]) / 1000.0;
-        v = (double) Integer.valueOf(datas[4]) / 1000.0;
+        x = (double) Integer.valueOf(datas[0]) / 10000.0;
+        y = (double) Integer.valueOf(datas[1]) / 10000.0;
+        theta = (double) Integer.valueOf(datas[2]) / 10000.0;
+        w = (double) Integer.valueOf(datas[3]) / 10000.0;
+        v = (double) Integer.valueOf(datas[4]) / 10000.0;
 
         Platform.runLater(() -> {
             robotView.setRobotPosition(x, y, theta, v);
@@ -791,30 +808,47 @@ public class RemoteSimulatorPane {
         // sett.dfw = atof( ptrs[5] );
         // sett.unsafe = atof( ptrs[6] );
         // sett.max_w = atof( ptrs[7] );
+        DecimalFormat fmt = new DecimalFormat("0.####"); 
 
-        String cmd = String.format("sr%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n", m_settings.min_rpm, m_settings.max_rpm,
-                m_settings.wheelRadius, m_settings.wheelDistance, m_settings.atObstacle, m_settings.dfw,
-                m_settings.unsafe, m_settings.max_w);
+        String cmd = String.format("sr%d,%d,%d,%s,%s,%s,%s,%s,%s\n", m_settings.sampleTime, m_settings.min_rpm, m_settings.max_rpm,
+                fmt.format(m_settings.wheelRadius), 
+                fmt.format(m_settings.wheelDistance), 
+                fmt.format(m_settings.atObstacle), 
+                fmt.format(m_settings.dfw),
+                fmt.format(m_settings.unsafe), 
+                fmt.format(m_settings.max_w));
         sendCmd(cmd);
 
         log.info(cmd);
+        try{
+            Thread.sleep(400);
+        }catch(Exception e)
+        {
 
-        cmd = String.format("pi1%.4f,%.4f%.4f\n", m_settings.kp, m_settings.ki, m_settings.kd);
+        }
+
+       
+        cmd = String.format("pi1%s,%s,%s\n", fmt.format(m_settings.kp), fmt.format(m_settings.ki), fmt.format(m_settings.kd));
+        sendCmd(cmd);
+        log.info(cmd);
+
+        cmd = String.format("pi2%s,%s,%s\n", fmt.format(m_settings.pkp), fmt.format(m_settings.pki), fmt.format(m_settings.pkd));
 
         sendCmd(cmd);
         log.info(cmd);
 
-        cmd = String.format("pi2%.4f,%.4f%.4f\n", m_settings.pkp, m_settings.pki, m_settings.pkd);
+        try{
+            Thread.sleep(400);
+        }catch(Exception e)
+        {
+
+        }
+        cmd = String.format("pi3%s,%s,%s\n", fmt.format(m_settings.tkp), fmt.format(m_settings.tki), fmt.format(m_settings.tkd));
 
         sendCmd(cmd);
         log.info(cmd);
 
-        cmd = String.format("pi3%.4f,%.4f%.4f\n", m_settings.tkp, m_settings.tki, m_settings.tkd);
-
-        sendCmd(cmd);
-        log.info(cmd);
-
-        cmd = String.format("pi4%.4f,%.4f%.4f\n", m_settings.dkp, m_settings.dki, m_settings.dkd);
+        cmd = String.format("pi4%s,%s,%s\n",fmt.format(m_settings.dkp), fmt.format(m_settings.dki), fmt.format(m_settings.dkd));
 
         sendCmd(cmd);
         log.info(cmd);
@@ -852,7 +886,11 @@ public class RemoteSimulatorPane {
             return;
 
         if( !optionDialogHandler.settingsOk ) //click cancel ????
+        {
+            log.info("Option canceled....");
+
             return;
+        }
 
 
         log.info("Start Option....");
